@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming1
+	Damian | Programming2
 
 ]]
 
@@ -2180,16 +2180,24 @@ end)
 			TweenService:Create(Button.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()	
 
 
-local infoElement = CreateInfoText(Button, ButtonSettings.Info)
-if infoElement then
-    -- Adjust button container size to accommodate info text
-    local originalSize = Button.Size
-    Button.Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset, 0, 45 + 30)
-end
+            local infoElement = ButtonSettings.Info
+            if infoElement and infoElement ~= "" then
+                local InfoLabel = Button.Title:Clone()
+                InfoLabel.Position = UDim2.new(0.031, 0,0.668, 0)
+                InfoLabel.Size = UDim2.new(0.845, 0,0.624, 0)
+                InfoLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
+                InfoLabel.Name = "InfoText"
+                InfoLabel.TextTransparency = 0.6
+                InfoLabel.TextScaled = true
+                InfoLabel.Text = ButtonSettings.Info
 
+                Button.Size = UDim2.new(1, -10,0.047, 35)
 
-            Button.Interact.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                Button.Title.Size = UDim2.new(0.5, 0,0.498, 0)
+                Button.Title.Position = UDim2.new(0.028, 0,0.249, 0)
+            end
+        Button.Interact.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
         local mouse = Players.LocalPlayer:GetMouse()
         local relativeX = mouse.X - Button.AbsolutePosition.X
         local relativeY = mouse.Y - Button.AbsolutePosition.Y
