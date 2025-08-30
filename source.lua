@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming1
+	Damian | Programming2
 
 ]]
 
@@ -3306,7 +3306,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 		end
 
 		-- Slider
-        function Tab:CreateSlider(SliderSettings)
+function Tab:CreateSlider(SliderSettings)
 	local SLDragging = false
 	local Slider = Elements.Template.Slider:Clone()
 	Slider.Name = SliderSettings.Name
@@ -3333,31 +3333,23 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 	Slider.Main.Progress.Size =	UDim2.new(0, Slider.Main.AbsoluteSize.X * ((SliderSettings.CurrentValue + SliderSettings.Range[1]) / (SliderSettings.Range[2] - SliderSettings.Range[1])) > 5 and Slider.Main.AbsoluteSize.X * (SliderSettings.CurrentValue / (SliderSettings.Range[2] - SliderSettings.Range[1])) or 5, 1, 0)
 
-	-- Create input textbox next to the slider
+	-- Create input textbox next to the slider - simpler approach
 	local InputBox = Instance.new("TextBox")
-	InputBox.Size = UDim2.new(0, 70, 0, 25)
-	InputBox.Position = UDim2.new(1, 10, 0.5, -12.5)
-	InputBox.BackgroundColor3 = SelectedTheme.SliderBackground
-	InputBox.BorderSizePixel = 0
+	InputBox.Size = UDim2.new(0, 60, 1, -10)
+	InputBox.Position = UDim2.new(1, 5, 0, 5)
+	InputBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	InputBox.BorderSizePixel = 1
+	InputBox.BorderColor3 = Color3.fromRGB(80, 80, 80)
 	InputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-	InputBox.TextScaled = true
+	InputBox.TextSize = 14
 	InputBox.Font = Enum.Font.Gotham
 	InputBox.Text = tostring(SliderSettings.CurrentValue)
-	InputBox.PlaceholderText = "Value"
+	InputBox.PlaceholderText = ""
 	InputBox.ClearTextOnFocus = false
+	InputBox.ZIndex = 999
 	InputBox.Parent = Slider
-
-	-- Add stroke to input box
-	local InputStroke = Instance.new("UIStroke")
-	InputStroke.Color = SelectedTheme.SliderStroke
-	InputStroke.Transparency = 0.4
-	InputStroke.Thickness = 1
-	InputStroke.Parent = InputBox
-
-	-- Add corner radius to input box
-	local InputCorner = Instance.new("UICorner")
-	InputCorner.CornerRadius = UDim.new(0, 4)
-	InputCorner.Parent = InputBox
+	
+	print("Created input box with parent:", Slider.Name)
 
 	-- Handle input changes
 	local function HandleInput()
@@ -3537,8 +3529,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 		Slider.Main.Progress.BackgroundColor3 = SelectedTheme.SliderProgress
 		
 		-- Update input box theme
-		InputBox.BackgroundColor3 = SelectedTheme.SliderBackground
-		InputStroke.Color = SelectedTheme.SliderStroke
+		InputBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+		InputBox.BorderColor3 = Color3.fromRGB(80, 80, 80)
 	end)
 
 	return SliderSettings
