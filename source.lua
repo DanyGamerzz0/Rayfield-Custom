@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming13
+	Damian | Programming14
 
 ]]
 
@@ -3350,7 +3350,7 @@ function Tab:CreateSlider(SliderSettings)
 	InputBox.Parent = Slider
     local inboxcorner = Instance.new("UICorner")
     inboxcorner.Parent = InputBox
-    inboxcorner.CornerRadius = UDim2.new(0.5,0)
+    inboxcorner.CornerRadius = UDim.new(0.5,0)
 	
 	-- Re-disable clipping on the slider
 	Slider.ClipsDescendants = false
