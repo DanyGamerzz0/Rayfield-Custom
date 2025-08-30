@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming23
+	Damian | Programming24
 
 ]]
 
@@ -758,7 +758,7 @@ local SelectedTheme = RayfieldLibrary.Theme.Default
 local function CreateRipple(parent, clickPosition)
     local ripple = Instance.new("Frame")
     ripple.BackgroundColor3 = SelectedTheme.TextColor
-    ripple.BackgroundTransparency = 0.7
+    ripple.BackgroundTransparency = 0.4
     ripple.BorderSizePixel = 0
     ripple.Size = UDim2.new(0, 0, 0, 0)
     ripple.Position = UDim2.new(0, clickPosition.X, 0, clickPosition.Y)
