@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming3
+	Damian | Programming4
 
 ]]
 
@@ -2188,7 +2188,8 @@ end)
                 InfoLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
                 InfoLabel.Name = "InfoText"
                 InfoLabel.TextTransparency = 0.6
-                InfoLabel.TextScaled = true
+                InfoLabel.TextScaled = false
+                InfoLabel.TextSize = 10
                 InfoLabel.Text = ButtonSettings.Info
                 InfoLabel.Parent = Button
                 InfoLabel.Visible = true
