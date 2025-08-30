@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming5
+	Damian | Programming6
 
 ]]
 
@@ -2181,8 +2181,9 @@ end)
 
 
             local infoElement = ButtonSettings.Info
+local infoElement = ButtonSettings.Info
 if infoElement and infoElement ~= "" then
-    -- First, calculate text heights dynamically
+    -- Get text measurements
     local titleTextBounds = Button.Title.TextBounds
     local baseHeight = titleTextBounds.Y
     
@@ -2196,28 +2197,29 @@ if infoElement and infoElement ~= "" then
     InfoLabel.TextSize = 10
     InfoLabel.Parent = Button
     
-    -- Wait for text bounds to update
+    -- Wait for text bounds
     InfoLabel:GetPropertyChangedSignal("TextBounds"):Wait()
     local infoTextBounds = InfoLabel.TextBounds
     
-    -- Calculate dynamic spacing
-    local verticalPadding = math.max(8, baseHeight * 0.4) -- Generous but proportional
-    local titleInfoGap = baseHeight * 0.15 -- Small gap between title and info
-    local horizontalPadding = 12 -- Fixed horizontal padding
+    -- BETTER spacing calculations
+    local topPadding = math.max(6, baseHeight * 0.25)  -- Less top padding
+    local bottomPadding = math.max(8, baseHeight * 0.35)  -- More bottom padding
+    local titleInfoGap = math.max(2, baseHeight * 0.1)  -- Smaller gap
+    local horizontalPadding = 12
     
-    -- Calculate total height needed
+    -- Calculate total height
     local totalContentHeight = baseHeight + titleInfoGap + infoTextBounds.Y
-    local totalButtonHeight = totalContentHeight + (verticalPadding * 2)
+    local totalButtonHeight = totalContentHeight + topPadding + bottomPadding
     
     -- Update button size
     Button.Size = UDim2.new(1, -10, 0, totalButtonHeight)
     
-    -- Position title at top with padding
-    Button.Title.Position = UDim2.new(0, horizontalPadding, 0, verticalPadding)
+    -- Position title closer to top
+    Button.Title.Position = UDim2.new(0, horizontalPadding, 0, topPadding)
     Button.Title.Size = UDim2.new(1, -horizontalPadding * 2, 0, baseHeight)
     
-    -- Position info text right below title
-    local infoYPos = verticalPadding + baseHeight + titleInfoGap
+    -- Position info text with minimal gap
+    local infoYPos = topPadding + baseHeight + titleInfoGap
     InfoLabel.Position = UDim2.new(0, horizontalPadding, 0, infoYPos)
     InfoLabel.Size = UDim2.new(1, -horizontalPadding * 2, 0, infoTextBounds.Y)
     
