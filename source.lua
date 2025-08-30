@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming17
+	Damian | Programming18
 
 ]]
 
@@ -822,9 +822,9 @@ local function AutoApplyRipples(container)
     for _, child in ipairs(container:GetDescendants()) do
         if child:IsA("GuiObject") then
             -- Check if element has click handlers or is interactive
-            if child.Name:find("Button") or child.Name:find("Toggle") or child.Name:find("Interact") then
+           -- if child.Name:find("Button") or child.Name:find("ColorPicker") or child.Name:find("Interact") then
                 AddRippleToElement(child)
-            end
+           -- end
         end
     end
 end
