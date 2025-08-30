@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming28
+	Damian | Programming1
 
 ]]
 
@@ -778,6 +778,37 @@ local function CreateRipple(parent, clickPosition)
     }):Play().Completed:Connect(function()
         ripple:Destroy()
     end)
+end
+
+local function CreateInfoText(parent, infoText)
+    if not infoText or infoText == "" then return nil end
+    
+    local InfoLabel = Instance.new("Frame")
+    InfoLabel.Name = "InfoText"
+    InfoLabel.Size = UDim2.new(1, -20, 0, 25)
+    InfoLabel.Position = UDim2.new(0, 10, 1, 5)
+    InfoLabel.BackgroundTransparency = 1
+    InfoLabel.Parent = parent
+    
+    local InfoText = Instance.new("TextLabel")
+    InfoText.Size = UDim2.new(1, 0, 1, 0)
+    InfoText.Position = UDim2.new(0, 0, 0, 0)
+    InfoText.BackgroundTransparency = 1
+    InfoText.Text = infoText
+    InfoText.TextColor3 = SelectedTheme.TextColor
+    InfoText.TextTransparency = 0.4
+    InfoText.TextSize = 12
+    InfoText.Font = Enum.Font.Gotham
+    InfoText.TextXAlignment = Enum.TextXAlignment.Left
+    InfoText.TextYAlignment = Enum.TextYAlignment.Top
+    InfoText.TextWrapped = true
+    InfoText.Parent = InfoLabel
+    
+    -- Animate in
+    InfoText.TextTransparency = 1
+    TweenService:Create(InfoText, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {TextTransparency = 0.4}):Play()
+    
+    return InfoLabel
 end
 
 local function ChangeTheme(Theme)
@@ -2147,6 +2178,14 @@ end)
 			TweenService:Create(Button, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
 			TweenService:Create(Button.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
 			TweenService:Create(Button.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()	
+
+
+local infoElement = CreateInfoText(Button, ButtonSettings.Info)
+if infoElement then
+    -- Adjust button container size to accommodate info text
+    local originalSize = Button.Size
+    Button.Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset, 0, 45 + 30)
+end
 
 
             Button.Interact.InputBegan:Connect(function(input)
