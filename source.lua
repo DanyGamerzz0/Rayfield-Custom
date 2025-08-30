@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming2
+	Damian | Programming3
 
 ]]
 
@@ -3344,10 +3344,10 @@ function Tab:CreateSlider(SliderSettings)
 	InputBox.TextSize = 14
 	InputBox.Font = Enum.Font.Gotham
 	InputBox.Text = tostring(SliderSettings.CurrentValue)
-	InputBox.PlaceholderText = ""
+	InputBox.PlaceholderText = "YOYO"
 	InputBox.ClearTextOnFocus = false
 	InputBox.ZIndex = 999
-	InputBox.Parent = Slider
+	InputBox.Parent = TabPage
 	
 	print("Created input box with parent:", Slider.Name)
 
