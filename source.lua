@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming19
+	Damian | Programming20
 
 ]]
 
@@ -755,42 +755,91 @@ local Notifications = Rayfield.Notifications
 
 local SelectedTheme = RayfieldLibrary.Theme.Default
 
-local function CreateRippleEffect(parent, position, color)
-    -- Create the ripple element
+local function CreateRipple(parent, position)
     local ripple = Instance.new("Frame")
-    ripple.Name = "RippleEffect"
-    ripple.BackgroundColor3 = color or SelectedTheme.TextColor
-    ripple.BackgroundTransparency = 0.7
+    ripple.Name = "Ripple"
+    ripple.BackgroundColor3 = SelectedTheme.TextColor
+    ripple.BackgroundTransparency = 0.8
     ripple.BorderSizePixel = 0
     ripple.Size = UDim2.new(0, 0, 0, 0)
     ripple.Position = UDim2.new(0, position.X, 0, position.Y)
     ripple.AnchorPoint = Vector2.new(0.5, 0.5)
-    ripple.ZIndex = 100
+    ripple.ZIndex = 1000 -- High ZIndex to appear above everything
     
-    -- Make it circular
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(1, 0)
     corner.Parent = ripple
     
     ripple.Parent = parent
     
-    -- Calculate the maximum distance to cover the entire element
-    local maxSize = math.max(parent.AbsoluteSize.X, parent.AbsoluteSize.Y) * 2
+    -- Calculate max size needed to cover the parent
+    --local maxSize = math.max(parent.AbsoluteSize.X, parent.AbsoluteSize.Y) * 1.5
     
-    -- Animate the ripple expanding
-    local expandTween = TweenService:Create(ripple, 
-        TweenInfo.new(0.6, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), 
+    -- Animate the ripple
+    local tween = TweenService:Create(ripple, 
+        TweenInfo.new(0.5, Enum.EasingStyle.Exponential), 
         {
-            Size = UDim2.new(0, maxSize, 0, maxSize),
+            Size = UDim2.new(0.2, 0, 0.2, 0),
             BackgroundTransparency = 1
         }
     )
     
-    expandTween:Play()
-    
-    -- Clean up after animation
-    expandTween.Completed:Connect(function()
+    tween:Play()
+    tween.Completed:Connect(function()
         ripple:Destroy()
+    end)
+end
+
+local function SetupGlobalRippleDetector()
+    UserInputService.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            local mouse = Players.LocalPlayer:GetMouse()
+            local clickedGui = mouse.Target
+            
+            -- Check if clicked element is part of Rayfield UI
+            local function IsRayfieldElement(element)
+                if not element then return false end
+                
+                -- Walk up the parent hierarchy to find if it's part of Rayfield
+                local current = element
+                while current do
+                    -- Check if it's the main Rayfield window or any of its children
+                    if current == Main or current.Name == "Rayfield" then
+                        return true
+                    end
+                    -- Check if it's part of any Rayfield elements
+                    if current.Name:find("Button") or current.Name:find("Toggle") or 
+                       current.Name:find("Slider") or current.Name:find("Dropdown") or
+                       current.Name:find("Input") or current.Name:find("ColorPicker") or
+                       current.Parent == TabList or current.Parent == Elements then
+                        return true
+                    end
+                    current = current.Parent
+                end
+                return false
+            end
+            
+            if IsRayfieldElement(clickedGui) then
+                -- Find the best parent element to create ripple on
+                local rippleParent = clickedGui
+                local current = clickedGui
+                
+                -- Walk up to find a suitable container (Frame, Button, etc.)
+                while current and current ~= Main do
+                    if current:IsA("Frame") and current.AbsoluteSize.X > 50 and current.AbsoluteSize.Y > 20 then
+                        rippleParent = current
+                        break
+                    end
+                    current = current.Parent
+                end
+                
+                -- Calculate relative position within the ripple parent
+                local relativeX = mouse.X - rippleParent.AbsolutePosition.X
+                local relativeY = mouse.Y - rippleParent.AbsolutePosition.Y
+                
+                CreateRipple(rippleParent, Vector2.new(relativeX, relativeY))
+            end
+        end
     end)
 end
 
@@ -816,17 +865,6 @@ local function AddRippleToElement(element, customColor)
             CreateRippleEffect(element, Vector2.new(relativeX, relativeY), customColor)
         end
     end)
-end
-
-local function AutoApplyRipples(container)
-    for _, child in ipairs(container:GetDescendants()) do
-        if child:IsA("GuiObject") then
-            -- Check if element has click handlers or is interactive
-           -- if child.Name:find("Button") or child.Name:find("ColorPicker") or child.Name:find("Interact") then
-                AddRippleToElement(child)
-           -- end
-        end
-    end
 end
 
 local function ChangeTheme(Theme)
@@ -3928,6 +3966,6 @@ task.delay(4, function()
 	end
 end)
 
-AutoApplyRipples(Main)
+SetupGlobalRippleDetector()
 
 return RayfieldLibrary
