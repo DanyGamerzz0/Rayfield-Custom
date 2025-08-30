@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming15
+	Damian | Programming17
 
 ]]
 
@@ -801,7 +801,7 @@ local function AddRippleToElement(element, customColor)
         detector = Instance.new("Frame")
         detector.Name = "RippleDetector"
         detector.BackgroundTransparency = 1
-        detector.Size = UDim2.new(1, 0, 1, 0)
+        detector.Size = UDim2.new(0.2, 0, 0.2, 0)
         detector.Position = UDim2.new(0, 0, 0, 0)
         detector.ZIndex = element.ZIndex + 1
         detector.Parent = element
@@ -816,6 +816,17 @@ local function AddRippleToElement(element, customColor)
             CreateRippleEffect(element, Vector2.new(relativeX, relativeY), customColor)
         end
     end)
+end
+
+local function AutoApplyRipples(container)
+    for _, child in ipairs(container:GetDescendants()) do
+        if child:IsA("GuiObject") then
+            -- Check if element has click handlers or is interactive
+            if child.Name:find("Button") or child.Name:find("Toggle") or child.Name:find("Interact") then
+                AddRippleToElement(child)
+            end
+        end
+    end
 end
 
 local function ChangeTheme(Theme)
@@ -1773,7 +1784,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 
 	makeDraggable(Main, Topbar, false, {dragOffset, dragOffsetMobile})
-    AddRippleToElement(Main, SelectedTheme.TextColor)
 	if dragBar then dragBar.Position = useMobileSizing and UDim2.new(0.5, 0, 0.5, dragOffsetMobile) or UDim2.new(0.5, 0, 0.5, dragOffset) makeDraggable(Main, dragInteract, true, {dragOffset, dragOffsetMobile}) end
 
 	for _, TabButton in ipairs(TabList:GetChildren()) do
@@ -2132,13 +2142,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 		TabButton.Interact.MouseButton1Click:Connect(function()
 			if Minimised then return end
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-             local mouse = Players.LocalPlayer:GetMouse()
-             local relativeX = mouse.X - TabButton.AbsolutePosition.X
-             local relativeY = mouse.Y - TabButton.AbsolutePosition.Y
-        
-                CreateRippleEffect(TabButton, Vector2.new(relativeX, relativeY), SelectedTheme.SelectedTabTextColor)
-            end
 			TweenService:Create(TabButton, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
 			TweenService:Create(TabButton.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 			TweenService:Create(TabButton.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
@@ -2184,7 +2187,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 			TweenService:Create(Button.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
 			TweenService:Create(Button.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()	
 
-            AddRippleToElement(Button, SelectedTheme.ElementBackgroundHover)
 
 			Button.Interact.MouseButton1Click:Connect(function()
 				local Success, Response = pcall(ButtonSettings.Callback)
@@ -2894,12 +2896,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 					DropdownOption.Interact.ZIndex = 50
 					DropdownOption.Interact.MouseButton1Click:Connect(function()
-                        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                            local mouse = Players.LocalPlayer:GetMouse()
-                            local relativeX = mouse.X - DropdownOption.AbsolutePosition.X
-                            local relativeY = mouse.Y - DropdownOption.AbsolutePosition.Y
-                            CreateRippleEffect(DropdownOption, Vector2.new(relativeX, relativeY), SelectedTheme.DropdownSelected)
-                        end
 						if not DropdownSettings.MultipleOptions and table.find(DropdownSettings.CurrentOption, Option) then 
 							return
 						end
@@ -3256,13 +3252,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 			end)
 
 			Toggle.Interact.MouseButton1Click:Connect(function()
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                local mouse = Players.LocalPlayer:GetMouse()
-                local relativeX = mouse.X - Toggle.AbsolutePosition.X
-                local relativeY = mouse.Y - Toggle.AbsolutePosition.Y
-        
-                 CreateRippleEffect(Toggle, Vector2.new(relativeX, relativeY), SelectedTheme.ToggleEnabled)
-                end
 				if ToggleSettings.CurrentValue == true then
 					ToggleSettings.CurrentValue = false
 					TweenService:Create(Toggle, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackgroundHover}):Play()
@@ -3938,5 +3927,7 @@ task.delay(4, function()
 		Main.Notice.Visible = false
 	end
 end)
+
+AutoApplyRipples(Main)
 
 return RayfieldLibrary
