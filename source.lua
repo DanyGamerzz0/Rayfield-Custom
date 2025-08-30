@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming18
+	Damian | Programming19
 
 ]]
 
@@ -799,7 +799,7 @@ local function AddRippleToElement(element, customColor)
     local detector = element:FindFirstChild("RippleDetector")
     if not detector then
         detector = Instance.new("Frame")
-        detector.Name = "RippleDetector"
+        detector.Name = "Placeholder"
         detector.BackgroundTransparency = 1
         detector.Size = UDim2.new(0.2, 0, 0.2, 0)
         detector.Position = UDim2.new(0, 0, 0, 0)
