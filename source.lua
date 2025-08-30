@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming12
+	Damian | Programming13
 
 ]]
 
@@ -2182,39 +2182,36 @@ end)
 
 local infoElement = ButtonSettings.Info
 if infoElement and infoElement ~= "" then
-    -- Create info label
     local InfoLabel = Button.Title:Clone()
-    InfoLabel.Name = "InfoText"
+    InfoLabel.Name = "InfoText" 
     InfoLabel.Text = ButtonSettings.Info
-    InfoLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
-    InfoLabel.TextTransparency = 0.6
+    InfoLabel.TextColor3 = Color3.fromRGB(200, 200, 200) -- Slightly brighter
+    InfoLabel.TextTransparency = 0.4 -- Less transparent
     InfoLabel.TextScaled = false
-    InfoLabel.TextSize = 10
+    InfoLabel.TextSize = 11 -- Slightly bigger like reference
     InfoLabel.Parent = Button
     
-    -- Wait for text bounds
     InfoLabel:GetPropertyChangedSignal("TextBounds"):Wait()
     
-    -- Get text heights
     local titleHeight = Button.Title.TextBounds.Y
     local infoHeight = InfoLabel.TextBounds.Y
     
-    -- SIMPLE fixed spacing - no fancy logic
-    local topPadding = 10
-    local bottomPadding = 10
-    local titleInfoGap = 4
+    -- Fixed spacing
+    local topPadding = 12
+    local bottomPadding = 12
     local horizontalPadding = 12
     
-    -- Calculate button height
-    local totalButtonHeight = topPadding + titleHeight + titleInfoGap + infoHeight + bottomPadding
+    -- Calculate button height with enough space
+    local totalButtonHeight = topPadding + titleHeight + 8 + infoHeight + bottomPadding
     Button.Size = UDim2.new(1, -10, 0, totalButtonHeight)
     
-    -- Position title at fixed top position
+    -- Title stays at top
     Button.Title.Position = UDim2.new(0, horizontalPadding, 0, topPadding)
     Button.Title.Size = UDim2.new(1, -horizontalPadding * 2, 0, titleHeight)
     
-    -- Position info right below title
-    InfoLabel.Position = UDim2.new(0, horizontalPadding, 0, topPadding + titleHeight + titleInfoGap)
+    -- Info anchored to bottom
+    local infoY = totalButtonHeight - bottomPadding - infoHeight
+    InfoLabel.Position = UDim2.new(0, horizontalPadding, 0, infoY)
     InfoLabel.Size = UDim2.new(1, -horizontalPadding * 2, 0, infoHeight)
     
     InfoLabel.Visible = true
