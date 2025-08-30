@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming2
+	Damian | Programming3
 
 ]]
 
@@ -2190,6 +2190,8 @@ end)
                 InfoLabel.TextTransparency = 0.6
                 InfoLabel.TextScaled = true
                 InfoLabel.Text = ButtonSettings.Info
+                InfoLabel.Parent = Button
+                InfoLabel.Visible = true
 
                 Button.Size = UDim2.new(1, -10,0.047, 35)
 
