@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming27
+	Damian | Programming28
 
 ]]
 
@@ -770,10 +770,10 @@ local function CreateRipple(parent, clickPosition)
     corner.Parent = ripple
     ripple.Parent = parent
     
-    local maxSize = math.max(parent.AbsoluteSize.X, parent.AbsoluteSize.Y) * 1.5
+    --local maxSize = math.max(parent.AbsoluteSize.X, parent.AbsoluteSize.Y) * 1.5
     
     TweenService:Create(ripple, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {
-        Size = UDim2.fromOffset(maxSize,maxSize),
+        Size = UDim2.fromOffset(40,40),
         BackgroundTransparency = 1
     }):Play().Completed:Connect(function()
         ripple:Destroy()
