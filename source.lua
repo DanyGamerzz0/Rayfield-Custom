@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming6
+	Damian | Programming9
 
 ]]
 
@@ -2180,14 +2180,9 @@ end)
 			TweenService:Create(Button.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()	
 
 
-            local infoElement = ButtonSettings.Info
 local infoElement = ButtonSettings.Info
 if infoElement and infoElement ~= "" then
-    -- Get text measurements
-    local titleTextBounds = Button.Title.TextBounds
-    local baseHeight = titleTextBounds.Y
-    
-    -- Create info label
+    -- Create info label first
     local InfoLabel = Button.Title:Clone()
     InfoLabel.Name = "InfoText"
     InfoLabel.Text = ButtonSettings.Info
@@ -2199,29 +2194,31 @@ if infoElement and infoElement ~= "" then
     
     -- Wait for text bounds
     InfoLabel:GetPropertyChangedSignal("TextBounds"):Wait()
-    local infoTextBounds = InfoLabel.TextBounds
     
-    -- BETTER spacing calculations
-    local topPadding = math.max(6, baseHeight * 0.25)  -- Less top padding
-    local bottomPadding = math.max(8, baseHeight * 0.35)  -- More bottom padding
-    local titleInfoGap = math.max(2, baseHeight * 0.1)  -- Smaller gap
+    -- Get actual text heights
+    local titleHeight = Button.Title.TextBounds.Y
+    local infoHeight = InfoLabel.TextBounds.Y
+    
+    -- Calculate spacing more like the reference
+    local verticalPadding = 12  -- Fixed generous padding
+    local textGap = 3  -- Very tight gap between texts
     local horizontalPadding = 12
     
-    -- Calculate total height
-    local totalContentHeight = baseHeight + titleInfoGap + infoTextBounds.Y
-    local totalButtonHeight = totalContentHeight + topPadding + bottomPadding
-    
-    -- Update button size
+    -- Total button height
+    local totalButtonHeight = (verticalPadding * 2) + titleHeight + textGap + infoHeight
     Button.Size = UDim2.new(1, -10, 0, totalButtonHeight)
     
-    -- Position title closer to top
-    Button.Title.Position = UDim2.new(0, horizontalPadding, 0, topPadding)
-    Button.Title.Size = UDim2.new(1, -horizontalPadding * 2, 0, baseHeight)
+    -- Center the entire text block vertically
+    local totalTextHeight = titleHeight + textGap + infoHeight
+    local textBlockStartY = (totalButtonHeight - totalTextHeight) / 2
     
-    -- Position info text with minimal gap
-    local infoYPos = topPadding + baseHeight + titleInfoGap
-    InfoLabel.Position = UDim2.new(0, horizontalPadding, 0, infoYPos)
-    InfoLabel.Size = UDim2.new(1, -horizontalPadding * 2, 0, infoTextBounds.Y)
+    -- Position title
+    Button.Title.Position = UDim2.new(0, horizontalPadding, 0, textBlockStartY)
+    Button.Title.Size = UDim2.new(1, -horizontalPadding * 2, 0, titleHeight)
+    
+    -- Position info right below title
+    InfoLabel.Position = UDim2.new(0, horizontalPadding, 0, textBlockStartY + titleHeight + textGap)
+    InfoLabel.Size = UDim2.new(1, -horizontalPadding * 2, 0, infoHeight)
     
     InfoLabel.Visible = true
 end
