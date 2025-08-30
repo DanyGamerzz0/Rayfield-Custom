@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming4
+	Damian | Programming5
 
 ]]
 
@@ -3333,10 +3333,10 @@ function Tab:CreateSlider(SliderSettings)
 
 	Slider.Main.Progress.Size =	UDim2.new(0, Slider.Main.AbsoluteSize.X * ((SliderSettings.CurrentValue + SliderSettings.Range[1]) / (SliderSettings.Range[2] - SliderSettings.Range[1])) > 5 and Slider.Main.AbsoluteSize.X * (SliderSettings.CurrentValue / (SliderSettings.Range[2] - SliderSettings.Range[1])) or 5, 1, 0)
 
-	-- Create input textbox next to the slider - fix clipping issue
+	-- Create input textbox next to the slider - parent to TabPage but position relative to slider
 	local InputBox = Instance.new("TextBox")
-	InputBox.Size = UDim2.new(0, 60, 1, -10)
-	InputBox.Position = UDim2.new(1, 5, 0, 5)
+	InputBox.Size = UDim2.new(0, 60, 0, 30)
+	InputBox.Position = UDim2.new(0, 0, 0, 0) -- Will be updated after slider is positioned
 	InputBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 	InputBox.BorderSizePixel = 1
 	InputBox.BorderColor3 = Color3.fromRGB(80, 80, 80)
@@ -3347,12 +3347,20 @@ function Tab:CreateSlider(SliderSettings)
 	InputBox.PlaceholderText = ""
 	InputBox.ClearTextOnFocus = false
 	InputBox.ZIndex = 999
-	InputBox.Parent = Slider
+	InputBox.Parent = TabPage
 	
-	-- Disable clipping on the slider to allow input box to show outside bounds
-	Slider.ClipsDescendants = false
+	-- Position the input box next to the slider after it's rendered
+	task.spawn(function()
+		task.wait(0.1) -- Wait for slider to be positioned
+		local SliderPos = Slider.AbsolutePosition
+		local SliderSize = Slider.AbsoluteSize
+		InputBox.Position = UDim2.new(0, SliderPos.X + SliderSize.X + 10, 0, SliderPos.Y + (SliderSize.Y / 2) - 15)
+	end)
 	
-	print("Created input box with parent:", Slider.Name, "ClipsDescendants:", Slider.ClipsDescendants)
+	-- Re-disable clipping on the slider
+	Slider.ClipsDescendants = true
+	
+	print("Created input box parented to TabPage")
 
 	-- Handle input changes
 	local function HandleInput()
