@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming9
+	Damian | Programming10
 
 ]]
 
@@ -3335,8 +3335,8 @@ function Tab:CreateSlider(SliderSettings)
 
 	-- Create input textbox next to the slider - parent to TabPage but position relative to slider
 	local InputBox = Instance.new("TextBox")
-	InputBox.Size = UDim2.new({0, 72},{0, 30})
-	InputBox.Position = UDim2.new({0.32, 0},{0.17, 0}) -- Will be updated after slider is positioned
+	InputBox.Size = UDim2.new({0.163, 0},{0.703, 0})
+	InputBox.Position = UDim2.new({0.32, 0},{0.132, 0}) -- Will be updated after slider is positioned
 	InputBox.BackgroundColor3 = Color3.fromRGB(49, 49, 49)
 	InputBox.BorderSizePixel = 1
 	InputBox.BorderColor3 = Color3.fromRGB(64, 100, 126)
