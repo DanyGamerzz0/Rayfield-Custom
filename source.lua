@@ -6,8 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming
-	Blox | Fork Programming
+	Damian | Programming1
 
 ]]
 
@@ -3307,7 +3306,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 		end
 
 		-- Slider
-function Tab:CreateSlider(SliderSettings)
+        function Tab:CreateSlider(SliderSettings)
 	local SLDragging = false
 	local Slider = Elements.Template.Slider:Clone()
 	Slider.Name = SliderSettings.Name
@@ -3334,83 +3333,58 @@ function Tab:CreateSlider(SliderSettings)
 
 	Slider.Main.Progress.Size =	UDim2.new(0, Slider.Main.AbsoluteSize.X * ((SliderSettings.CurrentValue + SliderSettings.Range[1]) / (SliderSettings.Range[2] - SliderSettings.Range[1])) > 5 and Slider.Main.AbsoluteSize.X * (SliderSettings.CurrentValue / (SliderSettings.Range[2] - SliderSettings.Range[1])) or 5, 1, 0)
 
-	-- Function to update the display text
-	local function UpdateDisplay(value)
-		if not SliderSettings.Suffix then
-			Slider.Main.Information.Text = tostring(value)
-		else
-			Slider.Main.Information.Text = tostring(value) .. " " .. SliderSettings.Suffix
-		end
-	end
+	-- Create input textbox next to the slider
+	local InputBox = Instance.new("TextBox")
+	InputBox.Size = UDim2.new(0, 70, 0, 25)
+	InputBox.Position = UDim2.new(1, 10, 0.5, -12.5)
+	InputBox.BackgroundColor3 = SelectedTheme.SliderBackground
+	InputBox.BorderSizePixel = 0
+	InputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+	InputBox.TextScaled = true
+	InputBox.Font = Enum.Font.Gotham
+	InputBox.Text = tostring(SliderSettings.CurrentValue)
+	InputBox.PlaceholderText = "Value"
+	InputBox.ClearTextOnFocus = false
+	InputBox.Parent = Slider
 
-	UpdateDisplay(SliderSettings.CurrentValue)
-
-	-- Create a separate input textbox next to the slider
-	local InputContainer = Instance.new("Frame")
-	InputContainer.Size = UDim2.new(0, 60, 0, 25)
-	InputContainer.Position = UDim2.new(1, 10, 0.5, -12.5)
-	InputContainer.BackgroundColor3 = SelectedTheme.SliderBackground
-	InputContainer.BorderSizePixel = 0
-	InputContainer.Parent = Slider.Main
-
-	-- Add stroke to input container
+	-- Add stroke to input box
 	local InputStroke = Instance.new("UIStroke")
 	InputStroke.Color = SelectedTheme.SliderStroke
 	InputStroke.Transparency = 0.4
 	InputStroke.Thickness = 1
-	InputStroke.Parent = InputContainer
+	InputStroke.Parent = InputBox
 
-	-- Add corner radius to input container
+	-- Add corner radius to input box
 	local InputCorner = Instance.new("UICorner")
 	InputCorner.CornerRadius = UDim.new(0, 4)
-	InputCorner.Parent = InputContainer
-
-	-- Create the actual TextBox
-	local NumberInput = Instance.new("TextBox")
-	NumberInput.Size = UDim2.new(1, -8, 1, 0)
-	NumberInput.Position = UDim2.new(0, 4, 0, 0)
-	NumberInput.BackgroundTransparency = 1
-	NumberInput.TextColor3 = Slider.Main.Information.TextColor3
-	NumberInput.TextScaled = true
-	NumberInput.Font = Enum.Font.Gotham
-	NumberInput.Text = tostring(SliderSettings.CurrentValue)
-	NumberInput.PlaceholderText = "Value"
-	NumberInput.ClearTextOnFocus = false
-	NumberInput.Parent = InputContainer
+	InputCorner.Parent = InputBox
 
 	-- Handle input changes
 	local function HandleInput()
-		local InputValue = tonumber(NumberInput.Text)
+		local InputValue = tonumber(InputBox.Text)
 		
 		if InputValue then
-			-- Clamp the value to the slider's range
 			InputValue = math.clamp(InputValue, SliderSettings.Range[1], SliderSettings.Range[2])
-			
-			-- Apply increment rounding
 			InputValue = math.floor(InputValue / SliderSettings.Increment + 0.5) * (SliderSettings.Increment * 10000000) / 10000000
 			
-			-- Update the slider
 			SliderSettings:Set(InputValue)
-			NumberInput.Text = tostring(InputValue)
+			InputBox.Text = tostring(InputValue)
 		else
-			-- If invalid input, revert to current value
-			NumberInput.Text = tostring(SliderSettings.CurrentValue)
+			InputBox.Text = tostring(SliderSettings.CurrentValue)
 		end
 	end
 
-	-- Connect input events
-	NumberInput.FocusLost:Connect(HandleInput)
-	NumberInput.InputEnded:Connect(function(inputObject)
+	InputBox.FocusLost:Connect(HandleInput)
+	InputBox.InputEnded:Connect(function(inputObject)
 		if inputObject.KeyCode == Enum.KeyCode.Return then
 			HandleInput()
 		end
 	end)
 
-	-- Update input textbox when slider value changes
-	local function UpdateInputBox(value)
-		if not NumberInput:IsFocused() then
-			NumberInput.Text = tostring(value)
-		end
+	if not SliderSettings.Suffix then
+		Slider.Main.Information.Text = tostring(SliderSettings.CurrentValue)
+	else
+		Slider.Main.Information.Text = tostring(SliderSettings.CurrentValue) .. " " .. SliderSettings.Suffix
 	end
 
 	Slider.MouseEnter:Connect(function()
@@ -3469,8 +3443,16 @@ function Tab:CreateSlider(SliderSettings)
 				NewValue = math.floor(NewValue / SliderSettings.Increment + 0.5) * (SliderSettings.Increment * 10000000) / 10000000
 				NewValue = math.clamp(NewValue, SliderSettings.Range[1], SliderSettings.Range[2])
 
-				UpdateDisplay(NewValue)
-				UpdateInputBox(NewValue)
+				if not SliderSettings.Suffix then
+					Slider.Main.Information.Text = tostring(NewValue)
+				else
+					Slider.Main.Information.Text = tostring(NewValue) .. " " .. SliderSettings.Suffix
+				end
+
+				-- Update input box when dragging (only if not focused)
+				if not InputBox:IsFocused() then
+					InputBox.Text = tostring(NewValue)
+				end
 
 				if SliderSettings.CurrentValue ~= NewValue then
 					local Success, Response = pcall(function()
@@ -3505,8 +3487,16 @@ function Tab:CreateSlider(SliderSettings)
 
 		TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.45, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, Slider.Main.AbsoluteSize.X * ((NewVal + SliderSettings.Range[1]) / (SliderSettings.Range[2] - SliderSettings.Range[1])) > 5 and Slider.Main.AbsoluteSize.X * (NewVal / (SliderSettings.Range[2] - SliderSettings.Range[1])) or 5, 1, 0)}):Play()
 		
-		UpdateDisplay(NewVal)
-		UpdateInputBox(NewVal)
+		if not SliderSettings.Suffix then
+			Slider.Main.Information.Text = tostring(NewVal)
+		else
+			Slider.Main.Information.Text = tostring(NewVal) .. " " .. SliderSettings.Suffix
+		end
+
+		-- Update input box when Set() is called (only if not focused)
+		if not InputBox:IsFocused() then
+			InputBox.Text = tostring(NewVal)
+		end
 
 		local Success, Response = pcall(function()
 			SliderSettings.Callback(NewVal)
@@ -3546,11 +3536,9 @@ function Tab:CreateSlider(SliderSettings)
 		Slider.Main.Progress.UIStroke.Color = SelectedTheme.SliderStroke
 		Slider.Main.Progress.BackgroundColor3 = SelectedTheme.SliderProgress
 		
-		-- Update input container theme
-		if InputContainer then
-			InputContainer.BackgroundColor3 = SelectedTheme.SliderBackground
-			InputStroke.Color = SelectedTheme.SliderStroke
-		end
+		-- Update input box theme
+		InputBox.BackgroundColor3 = SelectedTheme.SliderBackground
+		InputStroke.Color = SelectedTheme.SliderStroke
 	end)
 
 	return SliderSettings
