@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming5
+	Damian | Programming8
 
 ]]
 
@@ -3354,6 +3354,7 @@ function Tab:CreateSlider(SliderSettings)
 		task.wait(0.1) -- Wait for slider to be positioned
 		local SliderPos = Slider.AbsolutePosition
 		local SliderSize = Slider.AbsoluteSize
+		-- Position to the right of the slider, vertically centered
 		InputBox.Position = UDim2.new(0, SliderPos.X + SliderSize.X + 10, 0, SliderPos.Y + (SliderSize.Y / 2) - 15)
 	end)
 	
