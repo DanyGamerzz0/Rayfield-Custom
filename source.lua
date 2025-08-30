@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming20
+	Damian | Programming21
 
 ]]
 
@@ -755,115 +755,28 @@ local Notifications = Rayfield.Notifications
 
 local SelectedTheme = RayfieldLibrary.Theme.Default
 
-local function CreateRipple(parent, position)
+local function CreateRipple(parent, clickPosition)
     local ripple = Instance.new("Frame")
-    ripple.Name = "Ripple"
     ripple.BackgroundColor3 = SelectedTheme.TextColor
-    ripple.BackgroundTransparency = 0.8
+    ripple.BackgroundTransparency = 0.7
     ripple.BorderSizePixel = 0
     ripple.Size = UDim2.new(0, 0, 0, 0)
-    ripple.Position = UDim2.new(0, position.X, 0, position.Y)
+    ripple.Position = UDim2.new(0, clickPosition.X, 0, clickPosition.Y)
     ripple.AnchorPoint = Vector2.new(0.5, 0.5)
-    ripple.ZIndex = 1000 -- High ZIndex to appear above everything
+    ripple.ZIndex = 100
     
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(1, 0)
     corner.Parent = ripple
-    
     ripple.Parent = parent
     
-    -- Calculate max size needed to cover the parent
-    --local maxSize = math.max(parent.AbsoluteSize.X, parent.AbsoluteSize.Y) * 1.5
+    local maxSize = math.max(parent.AbsoluteSize.X, parent.AbsoluteSize.Y) * 1.5
     
-    -- Animate the ripple
-    local tween = TweenService:Create(ripple, 
-        TweenInfo.new(0.5, Enum.EasingStyle.Exponential), 
-        {
-            Size = UDim2.new(0.2, 0, 0.2, 0),
-            BackgroundTransparency = 1
-        }
-    )
-    
-    tween:Play()
-    tween.Completed:Connect(function()
+    TweenService:Create(ripple, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {
+        Size = UDim2.new(0, maxSize, 0, maxSize),
+        BackgroundTransparency = 1
+    }):Play().Completed:Connect(function()
         ripple:Destroy()
-    end)
-end
-
-local function SetupGlobalRippleDetector()
-    UserInputService.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            local mouse = Players.LocalPlayer:GetMouse()
-            local clickedGui = mouse.Target
-            
-            -- Check if clicked element is part of Rayfield UI
-            local function IsRayfieldElement(element)
-                if not element then return false end
-                
-                -- Walk up the parent hierarchy to find if it's part of Rayfield
-                local current = element
-                while current do
-                    -- Check if it's the main Rayfield window or any of its children
-                    if current == Main or current.Name == "Rayfield" then
-                        return true
-                    end
-                    -- Check if it's part of any Rayfield elements
-                    if current.Name:find("Button") or current.Name:find("Toggle") or 
-                       current.Name:find("Slider") or current.Name:find("Dropdown") or
-                       current.Name:find("Input") or current.Name:find("ColorPicker") or
-                       current.Parent == TabList or current.Parent == Elements then
-                        return true
-                    end
-                    current = current.Parent
-                end
-                return false
-            end
-            
-            if IsRayfieldElement(clickedGui) then
-                -- Find the best parent element to create ripple on
-                local rippleParent = clickedGui
-                local current = clickedGui
-                
-                -- Walk up to find a suitable container (Frame, Button, etc.)
-                while current and current ~= Main do
-                    if current:IsA("Frame") and current.AbsoluteSize.X > 50 and current.AbsoluteSize.Y > 20 then
-                        rippleParent = current
-                        break
-                    end
-                    current = current.Parent
-                end
-                
-                -- Calculate relative position within the ripple parent
-                local relativeX = mouse.X - rippleParent.AbsolutePosition.X
-                local relativeY = mouse.Y - rippleParent.AbsolutePosition.Y
-                
-                CreateRipple(rippleParent, Vector2.new(relativeX, relativeY))
-            end
-        end
-    end)
-end
-
-local function AddRippleToElement(element, customColor)
-    -- Create an invisible detector frame if the element doesn't already handle clicks
-    local detector = element:FindFirstChild("RippleDetector")
-    if not detector then
-        detector = Instance.new("Frame")
-        detector.Name = "Placeholder"
-        detector.BackgroundTransparency = 1
-        detector.Size = UDim2.new(0.2, 0, 0.2, 0)
-        detector.Position = UDim2.new(0, 0, 0, 0)
-        detector.ZIndex = element.ZIndex + 1
-        detector.Parent = element
-    end
-    
-    detector.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            local mouse = Players.LocalPlayer:GetMouse()
-            local relativeX = mouse.X - element.AbsolutePosition.X
-            local relativeY = mouse.Y - element.AbsolutePosition.Y
-            
-            CreateRippleEffect(element, Vector2.new(relativeX, relativeY), customColor)
-        end
     end)
 end
 
@@ -2178,6 +2091,16 @@ function RayfieldLibrary:CreateWindow(Settings)
 		end
 
 
+
+        TabButton.Interact.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if Minimised then return end
+        local mouse = Players.LocalPlayer:GetMouse()
+        local relativeX = mouse.X - TabButton.AbsolutePosition.X
+        local relativeY = mouse.Y - TabButton.AbsolutePosition.Y
+        CreateRipple(TabButton, Vector2.new(relativeX, relativeY))
+    end
+end)
 		TabButton.Interact.MouseButton1Click:Connect(function()
 			if Minimised then return end
 			TweenService:Create(TabButton, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
@@ -2225,6 +2148,15 @@ function RayfieldLibrary:CreateWindow(Settings)
 			TweenService:Create(Button.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
 			TweenService:Create(Button.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()	
 
+
+            Button.Interact.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local mouse = Players.LocalPlayer:GetMouse()
+        local relativeX = mouse.X - Button.AbsolutePosition.X
+        local relativeY = mouse.Y - Button.AbsolutePosition.Y
+        CreateRipple(Button, Vector2.new(relativeX, relativeY))
+    end
+end)
 
 			Button.Interact.MouseButton1Click:Connect(function()
 				local Success, Response = pcall(ButtonSettings.Callback)
@@ -2933,6 +2865,16 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 
 					DropdownOption.Interact.ZIndex = 50
+
+                    DropdownOption.Interact.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local mouse = Players.LocalPlayer:GetMouse()
+        local relativeX = mouse.X - DropdownOption.AbsolutePosition.X
+        local relativeY = mouse.Y - DropdownOption.AbsolutePosition.Y
+        CreateRipple(DropdownOption, Vector2.new(relativeX, relativeY))
+    end
+end)
+
 					DropdownOption.Interact.MouseButton1Click:Connect(function()
 						if not DropdownSettings.MultipleOptions and table.find(DropdownSettings.CurrentOption, Option) then 
 							return
@@ -3288,6 +3230,15 @@ function RayfieldLibrary:CreateWindow(Settings)
 			Toggle.MouseLeave:Connect(function()
 				TweenService:Create(Toggle, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
 			end)
+
+            Toggle.Interact.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local mouse = Players.LocalPlayer:GetMouse()
+        local relativeX = mouse.X - Toggle.AbsolutePosition.X
+        local relativeY = mouse.Y - Toggle.AbsolutePosition.Y
+        CreateRipple(Toggle, Vector2.new(relativeX, relativeY))
+    end
+end)
 
 			Toggle.Interact.MouseButton1Click:Connect(function()
 				if ToggleSettings.CurrentValue == true then
