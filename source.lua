@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming10
+	Damian | Programming11
 
 ]]
 
@@ -2199,25 +2199,31 @@ if infoElement and infoElement ~= "" then
     local titleHeight = Button.Title.TextBounds.Y
     local infoHeight = InfoLabel.TextBounds.Y
     
-    -- Calculate spacing
-    local verticalPadding = 12
-    local textGap = 6  -- Increased gap to push info down more
+    -- Adaptive spacing based on content amount
+    local minPadding = 8
+    local maxPadding = 16
+    local textGap = 4
     local horizontalPadding = 12
+    
+    -- Calculate if we need to use "compact" mode for lots of text
+    local totalContentHeight = titleHeight + textGap + infoHeight
+    local isLongText = totalContentHeight > 50 -- Threshold for switching modes
+    
+    local verticalPadding = isLongText and minPadding or maxPadding
     
     -- Total button height
     local totalButtonHeight = (verticalPadding * 2) + titleHeight + textGap + infoHeight
     Button.Size = UDim2.new(1, -10, 0, totalButtonHeight)
     
-    -- Center the text block but with more space for info
-    local totalTextHeight = titleHeight + textGap + infoHeight
-    local textBlockStartY = (totalButtonHeight - totalTextHeight) / 2
+    -- Position from top instead of centering for long text
+    local titleY = verticalPadding
+    local infoY = titleY + titleHeight + textGap
     
-    -- Keep title position (it's perfect!)
-    Button.Title.Position = UDim2.new(0, horizontalPadding, 0, textBlockStartY)
+    -- Position elements
+    Button.Title.Position = UDim2.new(0, horizontalPadding, 0, titleY)
     Button.Title.Size = UDim2.new(1, -horizontalPadding * 2, 0, titleHeight)
     
-    -- Push info label down more
-    InfoLabel.Position = UDim2.new(0, horizontalPadding, 0, textBlockStartY + titleHeight + textGap)
+    InfoLabel.Position = UDim2.new(0, horizontalPadding, 0, infoY)
     InfoLabel.Size = UDim2.new(1, -horizontalPadding * 2, 0, infoHeight)
     
     InfoLabel.Visible = true
