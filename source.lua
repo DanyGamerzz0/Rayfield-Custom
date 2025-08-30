@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming9
+	Damian | Programming10
 
 ]]
 
@@ -2199,24 +2199,24 @@ if infoElement and infoElement ~= "" then
     local titleHeight = Button.Title.TextBounds.Y
     local infoHeight = InfoLabel.TextBounds.Y
     
-    -- Calculate spacing more like the reference
-    local verticalPadding = 12  -- Fixed generous padding
-    local textGap = 3  -- Very tight gap between texts
+    -- Calculate spacing
+    local verticalPadding = 12
+    local textGap = 6  -- Increased gap to push info down more
     local horizontalPadding = 12
     
     -- Total button height
     local totalButtonHeight = (verticalPadding * 2) + titleHeight + textGap + infoHeight
     Button.Size = UDim2.new(1, -10, 0, totalButtonHeight)
     
-    -- Center the entire text block vertically
+    -- Center the text block but with more space for info
     local totalTextHeight = titleHeight + textGap + infoHeight
     local textBlockStartY = (totalButtonHeight - totalTextHeight) / 2
     
-    -- Position title
+    -- Keep title position (it's perfect!)
     Button.Title.Position = UDim2.new(0, horizontalPadding, 0, textBlockStartY)
     Button.Title.Size = UDim2.new(1, -horizontalPadding * 2, 0, titleHeight)
     
-    -- Position info right below title
+    -- Push info label down more
     InfoLabel.Position = UDim2.new(0, horizontalPadding, 0, textBlockStartY + titleHeight + textGap)
     InfoLabel.Size = UDim2.new(1, -horizontalPadding * 2, 0, infoHeight)
     
