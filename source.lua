@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming11
+	Damian | Programming12
 
 ]]
 
@@ -3348,6 +3348,8 @@ function Tab:CreateSlider(SliderSettings)
 	InputBox.ClearTextOnFocus = true
 	InputBox.ZIndex = 1
 	InputBox.Parent = Slider
+    local inboxcorner = Instance.new("UICorner")
+    inboxcorner.CornerRadius = UDim2.new(0.5,0)
 	
 	-- Re-disable clipping on the slider
 	Slider.ClipsDescendants = false
