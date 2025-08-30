@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming3
+	Damian | Programming4
 
 ]]
 
@@ -3333,7 +3333,7 @@ function Tab:CreateSlider(SliderSettings)
 
 	Slider.Main.Progress.Size =	UDim2.new(0, Slider.Main.AbsoluteSize.X * ((SliderSettings.CurrentValue + SliderSettings.Range[1]) / (SliderSettings.Range[2] - SliderSettings.Range[1])) > 5 and Slider.Main.AbsoluteSize.X * (SliderSettings.CurrentValue / (SliderSettings.Range[2] - SliderSettings.Range[1])) or 5, 1, 0)
 
-	-- Create input textbox next to the slider - simpler approach
+	-- Create input textbox next to the slider - fix clipping issue
 	local InputBox = Instance.new("TextBox")
 	InputBox.Size = UDim2.new(0, 60, 1, -10)
 	InputBox.Position = UDim2.new(1, 5, 0, 5)
@@ -3344,12 +3344,15 @@ function Tab:CreateSlider(SliderSettings)
 	InputBox.TextSize = 14
 	InputBox.Font = Enum.Font.Gotham
 	InputBox.Text = tostring(SliderSettings.CurrentValue)
-	InputBox.PlaceholderText = "YOYO"
+	InputBox.PlaceholderText = ""
 	InputBox.ClearTextOnFocus = false
 	InputBox.ZIndex = 999
-	InputBox.Parent = TabPage
+	InputBox.Parent = Slider
 	
-	print("Created input box with parent:", Slider.Name)
+	-- Disable clipping on the slider to allow input box to show outside bounds
+	Slider.ClipsDescendants = false
+	
+	print("Created input box with parent:", Slider.Name, "ClipsDescendants:", Slider.ClipsDescendants)
 
 	-- Handle input changes
 	local function HandleInput()
