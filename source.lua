@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming11
+	Damian | Programming12
 
 ]]
 
@@ -2182,7 +2182,7 @@ end)
 
 local infoElement = ButtonSettings.Info
 if infoElement and infoElement ~= "" then
-    -- Create info label first
+    -- Create info label
     local InfoLabel = Button.Title:Clone()
     InfoLabel.Name = "InfoText"
     InfoLabel.Text = ButtonSettings.Info
@@ -2195,35 +2195,26 @@ if infoElement and infoElement ~= "" then
     -- Wait for text bounds
     InfoLabel:GetPropertyChangedSignal("TextBounds"):Wait()
     
-    -- Get actual text heights
+    -- Get text heights
     local titleHeight = Button.Title.TextBounds.Y
     local infoHeight = InfoLabel.TextBounds.Y
     
-    -- Adaptive spacing based on content amount
-    local minPadding = 8
-    local maxPadding = 16
-    local textGap = 4
+    -- SIMPLE fixed spacing - no fancy logic
+    local topPadding = 10
+    local bottomPadding = 10
+    local titleInfoGap = 4
     local horizontalPadding = 12
     
-    -- Calculate if we need to use "compact" mode for lots of text
-    local totalContentHeight = titleHeight + textGap + infoHeight
-    local isLongText = totalContentHeight > 50 -- Threshold for switching modes
-    
-    local verticalPadding = isLongText and minPadding or maxPadding
-    
-    -- Total button height
-    local totalButtonHeight = (verticalPadding * 2) + titleHeight + textGap + infoHeight
+    -- Calculate button height
+    local totalButtonHeight = topPadding + titleHeight + titleInfoGap + infoHeight + bottomPadding
     Button.Size = UDim2.new(1, -10, 0, totalButtonHeight)
     
-    -- Position from top instead of centering for long text
-    local titleY = verticalPadding
-    local infoY = titleY + titleHeight + textGap
-    
-    -- Position elements
-    Button.Title.Position = UDim2.new(0, horizontalPadding, 0, titleY)
+    -- Position title at fixed top position
+    Button.Title.Position = UDim2.new(0, horizontalPadding, 0, topPadding)
     Button.Title.Size = UDim2.new(1, -horizontalPadding * 2, 0, titleHeight)
     
-    InfoLabel.Position = UDim2.new(0, horizontalPadding, 0, infoY)
+    -- Position info right below title
+    InfoLabel.Position = UDim2.new(0, horizontalPadding, 0, topPadding + titleHeight + titleInfoGap)
     InfoLabel.Size = UDim2.new(1, -horizontalPadding * 2, 0, infoHeight)
     
     InfoLabel.Visible = true
