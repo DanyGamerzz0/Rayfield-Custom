@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming21
+	Damian | Programming22
 
 ]]
 
@@ -3916,7 +3916,5 @@ task.delay(4, function()
 		Main.Notice.Visible = false
 	end
 end)
-
-SetupGlobalRippleDetector()
 
 return RayfieldLibrary
