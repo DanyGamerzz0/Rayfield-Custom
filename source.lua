@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming18
+	Damian | Programming19
 
 ]]
 
@@ -2193,17 +2193,26 @@ if infoElement and infoElement ~= "" then
     
     InfoLabel:GetPropertyChangedSignal("TextBounds"):Wait()
     
-    -- Keep your current logic but add a small adjustment
-    Button.Size = UDim2.new(1, -10, 0, 60)
-    Button.Title.Position = UDim2.new(0, 12, 0.2, 0)
-    Button.Title.Size = UDim2.new(1, -24, 0.3, 0)
-    
-    -- Add a small downward offset for longer text
+    -- Make button height adaptive to text amount
     local textLength = string.len(ButtonSettings.Info)
-    local yOffset = textLength > 50 and 5 or 0  -- Push down 5 pixels if text is long
+    local buttonHeight = textLength > 80 and 60 or 45  -- Shorter for small text
     
-    InfoLabel.Position = UDim2.new(0, 12, 0.6, yOffset)
-    InfoLabel.Size = UDim2.new(1, -24, 0.25, 0)
+    Button.Size = UDim2.new(1, -10, 0, buttonHeight)
+    
+    -- Adjust positioning based on button size
+    if buttonHeight == 45 then
+        -- Compact positioning for short text
+        Button.Title.Position = UDim2.new(0, 12, 0.15, 0)
+        Button.Title.Size = UDim2.new(1, -24, 0.35, 0)
+        InfoLabel.Position = UDim2.new(0, 12, 0.55, 0)
+        InfoLabel.Size = UDim2.new(1, -24, 0.3, 0)
+    else
+        -- Your existing positioning for long text
+        Button.Title.Position = UDim2.new(0, 12, 0.2, 0)
+        Button.Title.Size = UDim2.new(1, -24, 0.3, 0)
+        InfoLabel.Position = UDim2.new(0, 12, 0.6, 5)
+        InfoLabel.Size = UDim2.new(1, -24, 0.25, 0)
+    end
     
     InfoLabel.Visible = true
 end
