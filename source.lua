@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming
+	Damian | Programming1
 
 ]]
 
@@ -2195,7 +2195,7 @@ if infoElement and infoElement ~= "" then
     local buttonHeight = customHeight or 50
     Button.Size = UDim2.new(1, -10, 0, buttonHeight)
     
-    Button.Title.Position = UDim2.new(0, 12, 0, 8)
+    Button.Title.Position = UDim2.new(0, 12, 0, 7)
     Button.Title.Size = UDim2.new(1, -24, 0, 16)
     
     InfoLabel.Position = UDim2.new(0, 12, 0, buttonHeight - 18)
@@ -2717,6 +2717,31 @@ end)
 			Input.InputFrame.InputBox.PlaceholderText = InputSettings.PlaceholderText
 			Input.InputFrame.Size = UDim2.new(0, Input.InputFrame.InputBox.TextBounds.X + 24, 0, 30)
 
+local infoElement = InputSettings.Info
+local customHeight = InputSettings.InfoHeight
+
+if infoElement and infoElement ~= "" then
+    local InfoLabel = Input.Title:Clone()
+    InfoLabel.Name = "InfoText"
+    InfoLabel.Text = InputSettings.Info
+    InfoLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    InfoLabel.TextTransparency = 0.4
+    InfoLabel.TextScaled = false
+    InfoLabel.TextSize = 11
+    InfoLabel.Parent = Input
+    
+    local InputHeight = customHeight or 50
+    Input.Size = UDim2.new(1, -10, 0, InputHeight)
+    
+    Input.Title.Position = UDim2.new(0, 12, 0, 7)
+    Input.Title.Size = UDim2.new(1, -24, 0, 16)
+    
+    InfoLabel.Position = UDim2.new(0, 12, 0, InputHeight - 18)
+    InfoLabel.Size = UDim2.new(1, -24, 0, 12)
+    
+    InfoLabel.Visible = true
+end
+
 			Input.InputFrame.InputBox.FocusLost:Connect(function()
 				local Success, Response = pcall(function()
 					InputSettings.Callback(Input.InputFrame.InputBox.Text)
@@ -2794,6 +2819,31 @@ end)
 			Dropdown.Title.Text = DropdownSettings.Name
 			Dropdown.Visible = true
 			Dropdown.Parent = TabPage
+
+local infoElement = DropdownSettings.Info
+local customHeight = DropdownSettings.InfoHeight
+
+if infoElement and infoElement ~= "" then
+    local InfoLabel = Dropdown.Title:Clone()
+    InfoLabel.Name = "InfoText"
+    InfoLabel.Text = DropdownSettings.Info
+    InfoLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    InfoLabel.TextTransparency = 0.4
+    InfoLabel.TextScaled = false
+    InfoLabel.TextSize = 11
+    InfoLabel.Parent = Dropdown
+    
+    local DropdownHeight = customHeight or 50
+    Dropdown.Size = UDim2.new(1, -10, 0, DropdownHeight)
+    
+    Dropdown.Title.Position = UDim2.new(0, 12, 0, 7)
+    Dropdown.Title.Size = UDim2.new(1, -24, 0, 16)
+    
+    InfoLabel.Position = UDim2.new(0, 12, 0, DropdownHeight - 18)
+    InfoLabel.Size = UDim2.new(1, -24, 0, 12)
+    
+    InfoLabel.Visible = true
+end
 
 			Dropdown.List.Visible = false
 			if DropdownSettings.CurrentOption then
@@ -3284,6 +3334,31 @@ end)
 			Toggle.MouseLeave:Connect(function()
 				TweenService:Create(Toggle, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
 			end)
+
+local infoElement = ToggleSettings.Info
+local customHeight = ToggleSettings.InfoHeight
+
+if infoElement and infoElement ~= "" then
+    local InfoLabel = Toggle.Title:Clone()
+    InfoLabel.Name = "InfoText"
+    InfoLabel.Text = ToggleSettings.Info
+    InfoLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    InfoLabel.TextTransparency = 0.4
+    InfoLabel.TextScaled = false
+    InfoLabel.TextSize = 11
+    InfoLabel.Parent = Toggle
+    
+    local ToggleHeight = customHeight or 50
+    Toggle.Size = UDim2.new(1, -10, 0, ToggleHeight)
+    
+    Toggle.Title.Position = UDim2.new(0, 12, 0, 7)
+    Toggle.Title.Size = UDim2.new(1, -24, 0, 16)
+    
+    InfoLabel.Position = UDim2.new(0, 12, 0, ToggleHeight - 18)
+    InfoLabel.Size = UDim2.new(1, -24, 0, 12)
+    
+    InfoLabel.Visible = true
+end
 
             Toggle.Interact.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
