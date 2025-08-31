@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming17
+	Damian | Programming18
 
 ]]
 
@@ -1174,7 +1174,7 @@ function RayfieldLibrary:TopNotify(data)
         topNotification.Size = UDim2.new(0, 400, 0, 60)
         topNotification.Position = UDim2.new(0.5, -200, 0, -70) -- Start above screen
         topNotification.BackgroundColor3 = Color3.fromRGB(45, 50, 55)
-		topNotification.BackgroundTransparency = 0.5
+		topNotification.BackgroundTransparency = 0.6
         topNotification.BorderSizePixel = 0
         topNotification.Parent = game.CoreGui:FindFirstChild("RobloxGui") or game.Players.LocalPlayer.PlayerGui
         
@@ -1261,7 +1261,7 @@ function RayfieldLibrary:TopNotify(data)
         
         -- Slide down animation
         TweenService:Create(topNotification, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Position = UDim2.new(0.5, -400, 0, 20)
+            Position = UDim2.new(0.5, -200, 0, 80)
         }):Play()
         
         -- Auto-dismiss after duration
