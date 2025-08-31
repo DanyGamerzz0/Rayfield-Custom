@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming5
+	Damian | Programming6
 
 ]]
 
@@ -2823,26 +2823,27 @@ end
 			Dropdown.Parent = TabPage
 
 local infoElement = DropdownSettings.Info
-local customHeight = DropdownSettings.InfoHeight
+local textScaled = DropdownSettings.TextScaled
 
 if infoElement and infoElement ~= "" then
     local InfoLabel = Dropdown.Title:Clone()
     InfoLabel.Name = "InfoText"
     InfoLabel.Text = DropdownSettings.Info
-    InfoLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-    InfoLabel.TextTransparency = 0.4
+    InfoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    InfoLabel.TextTransparency = 0.6
     InfoLabel.TextScaled = false
     InfoLabel.TextSize = 11
     InfoLabel.Parent = Dropdown
     
-    local DropdownHeight = customHeight or 50
-    Dropdown.Size = UDim2.new(1, -10, 0, DropdownHeight)
+    local InputScaled = textScaled or false
+    --Input.Size = UDim2.new(1, -10, 0, InputHeight)
     
-    Dropdown.Title.Position = UDim2.new(0, 12, 0, 7)
-    Dropdown.Title.Size = UDim2.new(1, -24, 0, 16)
+    Dropdown.Title.Position = UDim2.new(0, 12,0, 11)
+    Dropdown.Title.Size = UDim2.new(0, 200,0, 14)
     
-    InfoLabel.Position = UDim2.new(0, 12, 0, DropdownHeight - 18)
-    InfoLabel.Size = UDim2.new(1, -24, 0, 12)
+	InfoLabel.TextScaled = InputScaled
+    InfoLabel.Position = UDim2.new(0, 12,0, 29)
+    InfoLabel.Size = UDim2.new(0.650, -24,0.206, 12)
     
     InfoLabel.Visible = true
 end
@@ -3534,7 +3535,7 @@ if infoElement and infoElement ~= "" then
     
 	InfoLabel.TextScaled = InputScaled
     InfoLabel.Position = UDim2.new(0, 12,0, 29)
-    InfoLabel.Size = UDim2.new(0.751, -24,0.206, 12)
+    InfoLabel.Size = UDim2.new(0.369, -24,0.206, 12)
     
     InfoLabel.Visible = true
 end
