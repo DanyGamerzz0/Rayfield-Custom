@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming11
+	Damian | Programming12
 
 ]]
 
@@ -1164,6 +1164,127 @@ function RayfieldLibrary:Notify(data) -- action e.g open messages
 		newNotification:Destroy()
 	end)
 end
+
+function RayfieldLibrary:TopNotify(data)
+    task.spawn(function()
+        -- Create notification container at top of screen
+        local topNotification = Instance.new("Frame")
+        topNotification.Name = "TopNotification"
+        topNotification.Size = UDim2.new(0, 400, 0, 60)
+        topNotification.Position = UDim2.new(0.5, -200, 0, -70) -- Start above screen
+        topNotification.BackgroundColor3 = Color3.fromRGB(45, 50, 55)
+        topNotification.BorderSizePixel = 0
+        topNotification.Parent = game.CoreGui:FindFirstChild("RobloxGui") or game.Players.LocalPlayer.PlayerGui
+        
+        -- Rounded corners
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 8)
+        corner.Parent = topNotification
+        
+        -- Drop shadow effect
+        local shadow = Instance.new("ImageLabel")
+        shadow.Name = "Shadow"
+        shadow.Size = UDim2.new(1, 10, 1, 10)
+        shadow.Position = UDim2.new(0, -5, 0, -5)
+        shadow.BackgroundTransparency = 1
+        shadow.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png" -- Replace with shadow asset
+        shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+        shadow.ImageTransparency = 0.8
+        shadow.ZIndex = topNotification.ZIndex - 1
+        shadow.Parent = topNotification
+        
+        -- Warning/Info icon on the left
+        local icon = Instance.new("ImageLabel")
+        icon.Name = "Icon"
+        icon.Size = UDim2.new(0, 24, 0, 24)
+        icon.Position = UDim2.new(0, 15, 0.5, -12)
+        icon.BackgroundTransparency = 1
+        icon.Image = data.Icon or "rbxassetid://0" -- Default warning triangle
+        icon.ImageColor3 = data.IconColor or Color3.fromRGB(255, 200, 100)
+        icon.Parent = topNotification
+        
+        -- Title text
+        local title = Instance.new("TextLabel")
+        title.Name = "Title"
+        title.Size = UDim2.new(1, -55, 0, 18)
+        title.Position = UDim2.new(0, 50, 0, 8)
+        title.BackgroundTransparency = 1
+        title.Text = data.Title or "Notification"
+        title.TextColor3 = Color3.fromRGB(255, 255, 255)
+        title.TextSize = 14
+        title.Font = Enum.Font.SourceSansBold
+        title.TextXAlignment = Enum.TextXAlignment.Left
+        title.TextYAlignment = Enum.TextYAlignment.Center
+        title.Parent = topNotification
+        
+        -- Description text
+        local description = Instance.new("TextLabel")
+        description.Name = "Description"
+        description.Size = UDim2.new(1, -55, 0, 30)
+        description.Position = UDim2.new(0, 50, 0, 25)
+        description.BackgroundTransparency = 1
+        description.Text = data.Content or "No description provided"
+        description.TextColor3 = Color3.fromRGB(200, 200, 200)
+        description.TextSize = 11
+        description.Font = Enum.Font.SourceSans
+        description.TextXAlignment = Enum.TextXAlignment.Left
+        description.TextYAlignment = Enum.TextYAlignment.Top
+        description.TextWrapped = true
+        description.Parent = topNotification
+        
+        -- Optional close button
+        local closeButton = Instance.new("TextButton")
+        closeButton.Name = "CloseButton"
+        closeButton.Size = UDim2.new(0, 20, 0, 20)
+        closeButton.Position = UDim2.new(1, -25, 0, 5)
+        closeButton.BackgroundTransparency = 1
+        closeButton.Text = "×"
+        closeButton.TextColor3 = Color3.fromRGB(150, 150, 150)
+        closeButton.TextSize = 16
+        closeButton.Font = Enum.Font.SourceSansBold
+        closeButton.Parent = topNotification
+        
+        -- Slide down animation
+        TweenService:Create(topNotification, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Position = UDim2.new(0.5, -200, 0, 20)
+        }):Play()
+        
+        -- Auto-dismiss after duration
+        local duration = data.Duration or 4
+        local dismissStarted = false
+        
+        local function dismissNotification()
+            if dismissStarted then return end
+            dismissStarted = true
+            
+            -- Slide up and fade out
+            TweenService:Create(topNotification, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+                Position = UDim2.new(0.5, -200, 0, -70)
+            }):Play()
+            
+            task.wait(0.4)
+            topNotification:Destroy()
+        end
+        
+        -- Close button handler
+        closeButton.MouseButton1Click:Connect(dismissNotification)
+        
+        -- Auto-dismiss timer
+        task.wait(duration)
+        dismissNotification()
+    end)
+end
+
+-- Example usage:
+--[[
+RayfieldLibrary:TopNotify({
+    Title = "UI is hidden",
+    Content = "The UI has automatically closed. If you want to enable visibility, click the 'Show' button.",
+    Icon = "rbxassetid://your_warning_icon_id",
+    IconColor = Color3.fromRGB(255, 200, 100),
+    Duration = 5
+})
+--]]
 
 local function openSearch()
 	searchOpen = true
