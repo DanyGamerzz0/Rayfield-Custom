@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming16
+	Damian | Programming17
 
 ]]
 
@@ -2182,8 +2182,6 @@ end)
 
 local infoElement = ButtonSettings.Info
 
-local infoElement = ButtonSettings.Info
-
 if infoElement and infoElement ~= "" then
     local InfoLabel = Button.Title:Clone()
     InfoLabel.Name = "InfoText"
@@ -2192,36 +2190,41 @@ if infoElement and infoElement ~= "" then
     InfoLabel.TextTransparency = 0.4
     InfoLabel.TextScaled = false
     InfoLabel.TextSize = 11
+    InfoLabel.TextWrapped = true
+    InfoLabel.TextXAlignment = Enum.TextXAlignment.Left
+    InfoLabel.TextYAlignment = Enum.TextYAlignment.Top
     InfoLabel.Parent = Button
 
-    -- Wait for bounds to update
-    InfoLabel:GetPropertyChangedSignal("TextBounds"):Wait()
-
-    -- Get text heights
-    local titleHeight = Button.Title.TextBounds.Y
-    local infoHeight = InfoLabel.TextBounds.Y
-
-    -- Padding
+    local horizontalPadding = 12
     local verticalPadding = 8
     local titleInfoGap = 4
 
-    -- Height = padding + title + gap + info + padding
-    local minButtonHeight = verticalPadding + titleHeight + titleInfoGap + infoHeight + verticalPadding
+    -- Give it width before measuring so wrapping works properly
+    InfoLabel.Size = UDim2.new(1, -horizontalPadding * 2, 0, 0)
 
-    -- 👇 Keep width the same, only update Y size
+    -- Let Roblox calculate TextBounds after layout
+    task.wait()
+    local titleHeight = Button.Title.TextBounds.Y
+    local infoHeight = InfoLabel.TextBounds.Y
+
+    -- ✅ Resize InfoLabel to its actual needed height
+    InfoLabel.Size = UDim2.new(1, -horizontalPadding * 2, 0, infoHeight)
+
+    -- Button height = title + gap + info + padding
+    local minButtonHeight = verticalPadding + titleHeight + titleInfoGap + infoHeight + verticalPadding
     Button.Size = UDim2.new(Button.Size.X.Scale, Button.Size.X.Offset, 0, minButtonHeight)
 
     -- Position Title
-    Button.Title.Position = UDim2.new(0, 12, 0, verticalPadding)
-    Button.Title.Size = UDim2.new(1, -24, 0, titleHeight)
+    Button.Title.Position = UDim2.new(0, horizontalPadding, 0, verticalPadding)
+    Button.Title.Size = UDim2.new(1, -horizontalPadding * 2, 0, titleHeight)
 
-    -- Position Info
+    -- Position Info under Title
     local infoY = verticalPadding + titleHeight + titleInfoGap
-    InfoLabel.Position = UDim2.new(0, 12, 0, infoY)
-    InfoLabel.Size = UDim2.new(1, -24, 0, infoHeight)
+    InfoLabel.Position = UDim2.new(0, horizontalPadding, 0, infoY)
 
     InfoLabel.Visible = true
 end
+
 
 
         Button.Interact.InputBegan:Connect(function(input)
