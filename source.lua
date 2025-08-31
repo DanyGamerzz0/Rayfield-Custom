@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming2
+	Damian | Programming3
 
 ]]
 
@@ -2180,26 +2180,27 @@ end)
 			TweenService:Create(Button.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()	
 
 local infoElement = ButtonSettings.Info
-local customHeight = ButtonSettings.InfoHeight
+local textScaled = ButtonSettings.TextScaled
 
 if infoElement and infoElement ~= "" then
     local InfoLabel = Button.Title:Clone()
     InfoLabel.Name = "InfoText"
     InfoLabel.Text = ButtonSettings.Info
-    InfoLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-    InfoLabel.TextTransparency = 0.4
+    InfoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    InfoLabel.TextTransparency = 0.6
     InfoLabel.TextScaled = false
     InfoLabel.TextSize = 11
     InfoLabel.Parent = Button
     
-    local buttonHeight = customHeight or 50
-    Button.Size = UDim2.new(1, -10, 0, buttonHeight)
+    local InputScaled = textScaled or false
+    --Input.Size = UDim2.new(1, -10, 0, InputHeight)
     
-    Button.Title.Position = UDim2.new(0, 12, 0, 7)
-    Button.Title.Size = UDim2.new(1, -24, 0, 16)
+    Button.Title.Position = UDim2.new(0, 12,0, 11)
+    Button.Title.Size = UDim2.new(0, 200,0, 14)
     
-    InfoLabel.Position = UDim2.new(0, 12, 0, buttonHeight - 18)
-    InfoLabel.Size = UDim2.new(1, -24, 0, 12)
+	InfoLabel.TextScaled = InputScaled
+    InfoLabel.Position = UDim2.new(0, 12,0, 29)
+    InfoLabel.Size = UDim2.new(0.751, -24,0.206, 12)
     
     InfoLabel.Visible = true
 end
