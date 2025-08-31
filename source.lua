@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming19
+	Damian | Programming
 
 ]]
 
@@ -2179,8 +2179,9 @@ end)
 			TweenService:Create(Button.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
 			TweenService:Create(Button.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()	
 
-
 local infoElement = ButtonSettings.Info
+local customHeight = ButtonSettings.InfoHeight
+
 if infoElement and infoElement ~= "" then
     local InfoLabel = Button.Title:Clone()
     InfoLabel.Name = "InfoText"
@@ -2191,34 +2192,17 @@ if infoElement and infoElement ~= "" then
     InfoLabel.TextSize = 11
     InfoLabel.Parent = Button
     
-    InfoLabel:GetPropertyChangedSignal("TextBounds"):Wait()
-    
-    -- Make button height adaptive to text amount
-    local textLength = string.len(ButtonSettings.Info)
-    local buttonHeight = textLength > 80 and 60 or 45  -- Shorter for small text
-    
+    local buttonHeight = customHeight or 50
     Button.Size = UDim2.new(1, -10, 0, buttonHeight)
     
-    -- Adjust positioning based on button size
-    if buttonHeight == 45 then
-        -- Compact positioning for short text
-        Button.Title.Position = UDim2.new(0, 12, 0.15, 0)
-        Button.Title.Size = UDim2.new(1, -24, 0.35, 0)
-        InfoLabel.Position = UDim2.new(0, 12, 0.55, 0)
-        InfoLabel.Size = UDim2.new(1, -24, 0.3, 0)
-    else
-        -- Your existing positioning for long text
-        Button.Title.Position = UDim2.new(0, 12, 0.2, 0)
-        Button.Title.Size = UDim2.new(1, -24, 0.3, 0)
-        InfoLabel.Position = UDim2.new(0, 12, 0.6, 5)
-        InfoLabel.Size = UDim2.new(1, -24, 0.25, 0)
-    end
+    Button.Title.Position = UDim2.new(0, 12, 0, 8)
+    Button.Title.Size = UDim2.new(1, -24, 0, 16)
+    
+    InfoLabel.Position = UDim2.new(0, 12, 0, buttonHeight - 18)
+    InfoLabel.Size = UDim2.new(1, -24, 0, 12)
     
     InfoLabel.Visible = true
 end
-
-
-
         Button.Interact.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
         local mouse = Players.LocalPlayer:GetMouse()
