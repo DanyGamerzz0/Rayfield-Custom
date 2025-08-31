@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming19
+	Damian | Programming20
 
 ]]
 
@@ -3650,6 +3650,16 @@ function Tab:CreateSlider(SliderSettings)
 	Slider.UIStroke.Transparency = 1
 	Slider.Title.TextTransparency = 1
 
+	Slider.Main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	Slider.Main.UIStroke = Color3.fromRGB(255, 255, 255)
+	Slider.Main.Shadow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	Slider.Main.Progress.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+	Slider.Main.Progress.UIStroke.Color = Color3.fromRGB(255, 255, 255)
+
+	local informationstroke = Instance.new("UIStroke")
+	informationstroke.Parent = Slider.Main.Information
+	informationstroke.Transparency = 0.6
+
 local infoElement = SliderSettings.Info
 local textScaled = SliderSettings.TextScaled
 
@@ -3707,6 +3717,10 @@ end
 	InputBox.ZIndex = 1
 	InputBox.Parent = Slider
     local inboxcorner = Instance.new("UICorner")
+	local inboxstroke = Instance.new("UIStroke")
+	inboxstroke.Parent = InputBox
+	inboxstroke.Color = Color3.fromRGB(255,255,255)
+	inboxstroke.Thickness = 4
     inboxcorner.Parent = InputBox
     inboxcorner.CornerRadius = UDim.new(0.5,0)
 	
