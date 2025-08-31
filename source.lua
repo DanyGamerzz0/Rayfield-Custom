@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming15
+	Damian | Programming16
 
 ]]
 
@@ -1172,7 +1172,7 @@ function RayfieldLibrary:TopNotify(data)
         local topNotification = Instance.new("Frame")
         topNotification.Name = "TopNotification"
         topNotification.Size = UDim2.new(0, 400, 0, 60)
-        topNotification.Position = UDim2.new(0.5, -200, 0, -70) -- Start above screen
+        topNotification.Position = UDim2.new(0.5, -350, 0, -70) -- Start above screen
         topNotification.BackgroundColor3 = Color3.fromRGB(45, 50, 55)
 		topNotification.BackgroundTransparency = 0.5
         topNotification.BorderSizePixel = 0
