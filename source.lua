@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming20
+	Damian | Programming21
 
 ]]
 
@@ -3650,12 +3650,6 @@ function Tab:CreateSlider(SliderSettings)
 	Slider.UIStroke.Transparency = 1
 	Slider.Title.TextTransparency = 1
 
-	Slider.Main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	Slider.Main.UIStroke = Color3.fromRGB(255, 255, 255)
-	Slider.Main.Shadow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	Slider.Main.Progress.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
-	Slider.Main.Progress.UIStroke.Color = Color3.fromRGB(255, 255, 255)
-
 	local informationstroke = Instance.new("UIStroke")
 	informationstroke.Parent = Slider.Main.Information
 	informationstroke.Transparency = 0.6
@@ -3690,10 +3684,16 @@ end
 		Slider.Main.Shadow.Visible = false
 	end
 
-	Slider.Main.BackgroundColor3 = SelectedTheme.SliderBackground
-	Slider.Main.UIStroke.Color = SelectedTheme.SliderStroke
-	Slider.Main.Progress.UIStroke.Color = SelectedTheme.SliderStroke
-	Slider.Main.Progress.BackgroundColor3 = SelectedTheme.SliderProgress
+	--Slider.Main.BackgroundColor3 = SelectedTheme.SliderBackground
+	--Slider.Main.UIStroke.Color = SelectedTheme.SliderStroke
+	--Slider.Main.Progress.UIStroke.Color = SelectedTheme.SliderStroke
+	--Slider.Main.Progress.BackgroundColor3 = SelectedTheme.SliderProgress
+
+	Slider.Main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	Slider.Main.UIStroke.Color = Color3.fromRGB(255, 255, 255)
+	Slider.Main.Shadow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	Slider.Main.Progress.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+	Slider.Main.Progress.UIStroke.Color = Color3.fromRGB(255, 255, 255)
 
 	TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
 	TweenService:Create(Slider.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
