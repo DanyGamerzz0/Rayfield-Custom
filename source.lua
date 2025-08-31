@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming12
+	Damian | Programming13
 
 ]]
 
@@ -1165,6 +1165,7 @@ function RayfieldLibrary:Notify(data) -- action e.g open messages
 	end)
 end
 
+
 function RayfieldLibrary:TopNotify(data)
     task.spawn(function()
         -- Create notification container at top of screen
@@ -1199,9 +1200,22 @@ function RayfieldLibrary:TopNotify(data)
         icon.Size = UDim2.new(0, 24, 0, 24)
         icon.Position = UDim2.new(0, 15, 0.5, -12)
         icon.BackgroundTransparency = 1
-        icon.Image = data.Icon or "rbxassetid://0" -- Default warning triangle
         icon.ImageColor3 = data.IconColor or Color3.fromRGB(255, 200, 100)
         icon.Parent = topNotification
+        
+        -- Handle Lucide icons just like regular Rayfield notifications
+        if data.Image then
+            if typeof(data.Image) == 'string' and Icons then
+                local asset = getIcon(data.Image)
+                icon.Image = 'rbxassetid://'..asset.id
+                icon.ImageRectOffset = asset.imageRectOffset
+                icon.ImageRectSize = asset.imageRectSize
+            else
+                icon.Image = getAssetUri(data.Image)
+            end
+        else
+            icon.Image = "rbxassetid://" .. 0
+        end
         
         -- Title text
         local title = Instance.new("TextLabel")
@@ -1236,7 +1250,7 @@ function RayfieldLibrary:TopNotify(data)
         local closeButton = Instance.new("TextButton")
         closeButton.Name = "CloseButton"
         closeButton.Size = UDim2.new(0, 20, 0, 20)
-        closeButton.Position = UDim2.new(1, -25, 0, 5)
+        closeButton.Position = UDim2.new(1, -30, 0, 5)
         closeButton.BackgroundTransparency = 1
         closeButton.Text = "×"
         closeButton.TextColor3 = Color3.fromRGB(150, 150, 150)
