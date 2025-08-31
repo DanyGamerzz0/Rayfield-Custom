@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming13
+	Damian | Programming14
 
 ]]
 
@@ -2183,12 +2183,12 @@ end)
 local infoElement = ButtonSettings.Info
 if infoElement and infoElement ~= "" then
     local InfoLabel = Button.Title:Clone()
-    InfoLabel.Name = "InfoText" 
+    InfoLabel.Name = "InfoText"
     InfoLabel.Text = ButtonSettings.Info
-    InfoLabel.TextColor3 = Color3.fromRGB(200, 200, 200) -- Slightly brighter
-    InfoLabel.TextTransparency = 0.4 -- Less transparent
+    InfoLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    InfoLabel.TextTransparency = 0.4
     InfoLabel.TextScaled = false
-    InfoLabel.TextSize = 11 -- Slightly bigger like reference
+    InfoLabel.TextSize = 11
     InfoLabel.Parent = Button
     
     InfoLabel:GetPropertyChangedSignal("TextBounds"):Wait()
@@ -2196,26 +2196,29 @@ if infoElement and infoElement ~= "" then
     local titleHeight = Button.Title.TextBounds.Y
     local infoHeight = InfoLabel.TextBounds.Y
     
-    -- Fixed spacing
-    local topPadding = 12
-    local bottomPadding = 12
+    -- Base the button size primarily on info text needs
+    local verticalPadding = 12
+    local titleInfoGap = 6
     local horizontalPadding = 12
     
-    -- Calculate button height with enough space
-    local totalButtonHeight = topPadding + titleHeight + 8 + infoHeight + bottomPadding
-    Button.Size = UDim2.new(1, -10, 0, totalButtonHeight)
+    -- Calculate minimum height needed for clean layout
+    local minButtonHeight = verticalPadding + titleHeight + titleInfoGap + infoHeight + verticalPadding
     
-    -- Title stays at top
-    Button.Title.Position = UDim2.new(0, horizontalPadding, 0, topPadding)
+    -- Set button size based on content requirements
+    Button.Size = UDim2.new(1, -10, 0, minButtonHeight)
+    
+    -- Position elements with the space we actually have
+    Button.Title.Position = UDim2.new(0, horizontalPadding, 0, verticalPadding)
     Button.Title.Size = UDim2.new(1, -horizontalPadding * 2, 0, titleHeight)
     
-    -- Info anchored to bottom
-    local infoY = totalButtonHeight - bottomPadding - infoHeight
+    -- Info positioned with consistent gap from title
+    local infoY = verticalPadding + titleHeight + titleInfoGap
     InfoLabel.Position = UDim2.new(0, horizontalPadding, 0, infoY)
     InfoLabel.Size = UDim2.new(1, -horizontalPadding * 2, 0, infoHeight)
     
     InfoLabel.Visible = true
 end
+
         Button.Interact.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
         local mouse = Players.LocalPlayer:GetMouse()
