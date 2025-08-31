@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming14
+	Damian | Programming15
 
 ]]
 
@@ -2181,6 +2181,7 @@ end)
 
 
 local infoElement = ButtonSettings.Info
+
 if infoElement and infoElement ~= "" then
     local InfoLabel = Button.Title:Clone()
     InfoLabel.Name = "InfoText"
@@ -2191,30 +2192,31 @@ if infoElement and infoElement ~= "" then
     InfoLabel.TextSize = 11
     InfoLabel.Parent = Button
     
+    -- Wait for bounds to be calculated
     InfoLabel:GetPropertyChangedSignal("TextBounds"):Wait()
     
-    local titleHeight = Button.Title.TextBounds.Y
-    local infoHeight = InfoLabel.TextBounds.Y
+    -- Measure text sizes
+    local titleWidth, titleHeight = Button.Title.TextBounds.X, Button.Title.TextBounds.Y
+    local infoWidth, infoHeight = InfoLabel.TextBounds.X, InfoLabel.TextBounds.Y
     
-    -- Base the button size primarily on info text needs
     local verticalPadding = 12
     local titleInfoGap = 6
     local horizontalPadding = 12
     
-    -- Calculate minimum height needed for clean layout
+    -- Button width = max of both texts + padding
+    local minButtonWidth = math.max(titleWidth, infoWidth) + (horizontalPadding * 2)
+    -- Button height = stacked height of both labels + padding
     local minButtonHeight = verticalPadding + titleHeight + titleInfoGap + infoHeight + verticalPadding
     
-    -- Set button size based on content requirements
-    Button.Size = UDim2.new(1, -10, 0, minButtonHeight)
+    Button.Size = UDim2.new(0, minButtonWidth, 0, minButtonHeight)
     
-    -- Position elements with the space we actually have
+    -- Position elements
     Button.Title.Position = UDim2.new(0, horizontalPadding, 0, verticalPadding)
-    Button.Title.Size = UDim2.new(1, -horizontalPadding * 2, 0, titleHeight)
+    Button.Title.Size = UDim2.new(0, titleWidth, 0, titleHeight)
     
-    -- Info positioned with consistent gap from title
     local infoY = verticalPadding + titleHeight + titleInfoGap
     InfoLabel.Position = UDim2.new(0, horizontalPadding, 0, infoY)
-    InfoLabel.Size = UDim2.new(1, -horizontalPadding * 2, 0, infoHeight)
+    InfoLabel.Size = UDim2.new(0, infoWidth, 0, infoHeight)
     
     InfoLabel.Visible = true
 end
