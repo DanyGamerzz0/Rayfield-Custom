@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming13
+	Damian | Programming15
 
 ]]
 
@@ -1174,6 +1174,7 @@ function RayfieldLibrary:TopNotify(data)
         topNotification.Size = UDim2.new(0, 400, 0, 60)
         topNotification.Position = UDim2.new(0.5, -200, 0, -70) -- Start above screen
         topNotification.BackgroundColor3 = Color3.fromRGB(45, 50, 55)
+		topNotification.BackgroundTransparency = 0.5
         topNotification.BorderSizePixel = 0
         topNotification.Parent = game.CoreGui:FindFirstChild("RobloxGui") or game.Players.LocalPlayer.PlayerGui
         
@@ -1250,7 +1251,7 @@ function RayfieldLibrary:TopNotify(data)
         local closeButton = Instance.new("TextButton")
         closeButton.Name = "CloseButton"
         closeButton.Size = UDim2.new(0, 20, 0, 20)
-        closeButton.Position = UDim2.new(1, -30, 0, 5)
+        closeButton.Position = UDim2.new(1, -45, 0, 5)
         closeButton.BackgroundTransparency = 1
         closeButton.Text = "×"
         closeButton.TextColor3 = Color3.fromRGB(150, 150, 150)
