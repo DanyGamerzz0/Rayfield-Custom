@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming1
+	Damian | Programming2
 
 ]]
 
@@ -2718,26 +2718,27 @@ end)
 			Input.InputFrame.Size = UDim2.new(0, Input.InputFrame.InputBox.TextBounds.X + 24, 0, 30)
 
 local infoElement = InputSettings.Info
-local customHeight = InputSettings.InfoHeight
+local textScaled = InputSettings.TextScaled
 
 if infoElement and infoElement ~= "" then
     local InfoLabel = Input.Title:Clone()
     InfoLabel.Name = "InfoText"
     InfoLabel.Text = InputSettings.Info
-    InfoLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-    InfoLabel.TextTransparency = 0.4
+    InfoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    InfoLabel.TextTransparency = 0.6
     InfoLabel.TextScaled = false
     InfoLabel.TextSize = 11
     InfoLabel.Parent = Input
     
-    local InputHeight = customHeight or 50
-    Input.Size = UDim2.new(1, -10, 0, InputHeight)
+    local InputScaled = textScaled or false
+    --Input.Size = UDim2.new(1, -10, 0, InputHeight)
     
-    Input.Title.Position = UDim2.new(0, 12, 0, 7)
-    Input.Title.Size = UDim2.new(1, -24, 0, 16)
+    Input.Title.Position = UDim2.new(0, 12,0, 11)
+    Input.Title.Size = UDim2.new(0, 200,0, 14)
     
-    InfoLabel.Position = UDim2.new(0, 12, 0, InputHeight - 18)
-    InfoLabel.Size = UDim2.new(1, -24, 0, 12)
+	InfoLabel.TextScaled = InputScaled
+    InfoLabel.Position = UDim2.new(0, 12,0, 29)
+    InfoLabel.Size = UDim2.new(0.751, -24,0.206, 12)
     
     InfoLabel.Visible = true
 end
