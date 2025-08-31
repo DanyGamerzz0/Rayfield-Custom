@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming22
+	Damian | Programming24
 
 ]]
 
@@ -3699,11 +3699,7 @@ end
 	TweenService:Create(Slider.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
 	TweenService:Create(Slider.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()	
 
-	local progressWidth = Slider.Main.AbsoluteSize.X * ((SliderSettings.CurrentValue - SliderSettings.Range[1]) / (SliderSettings.Range[2] - SliderSettings.Range[1]))
-	if SliderSettings.CurrentValue <= SliderSettings.Range[1] then
-    progressWidth = 0 -- Hide progress bar when at minimum value
-end
-Slider.Main.Progress.Size = UDim2.new(0, progressWidth, 1, 0)
+	Slider.Main.Progress.Size =	UDim2.new(0, Slider.Main.AbsoluteSize.X * ((SliderSettings.CurrentValue + SliderSettings.Range[1]) / (SliderSettings.Range[2] - SliderSettings.Range[1])) > 5 and Slider.Main.AbsoluteSize.X * (SliderSettings.CurrentValue / (SliderSettings.Range[2] - SliderSettings.Range[1])) or 5, 1, 0)
 
 	-- Create input textbox next to the slider - parent to TabPage but position relative to slider
 	local InputBox = Instance.new("TextBox")
@@ -3724,8 +3720,8 @@ Slider.Main.Progress.Size = UDim2.new(0, progressWidth, 1, 0)
 	local inboxstroke = Instance.new("UIStroke")
 	inboxstroke.Parent = InputBox
 	inboxstroke.Color = Color3.fromRGB(255,255,255)
-	inboxstroke.Thickness = 3
 	inboxstroke.ApplyStrokeMode = "Border"
+	inboxstroke.Thickness = 1
     inboxcorner.Parent = InputBox
     inboxcorner.CornerRadius = UDim.new(0.5,0)
 	
@@ -3812,14 +3808,9 @@ Slider.Main.Progress.Size = UDim2.new(0, progressWidth, 1, 0)
 				elseif Current >= Location and (Location - Start) > 0 then
 					Start = Location
 				end
+				TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.45, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, Current - Slider.Main.AbsolutePosition.X, 1, 0)}):Play()
 				local NewValue = SliderSettings.Range[1] + (Location - Slider.Main.AbsolutePosition.X) / Slider.Main.AbsoluteSize.X * (SliderSettings.Range[2] - SliderSettings.Range[1])
 
-				local progressSize = Current - Slider.Main.AbsolutePosition.X
-				if NewValue <= SliderSettings.Range[1] then
-    			progressSize = 0 -- Hide progress bar when at minimum value
-				end
-				TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.45, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, progressSize, 1, 0)}):Play()
-				
 				NewValue = math.floor(NewValue / SliderSettings.Increment + 0.5) * (SliderSettings.Increment * 10000000) / 10000000
 				NewValue = math.clamp(NewValue, SliderSettings.Range[1], SliderSettings.Range[2])
 
@@ -3856,11 +3847,7 @@ Slider.Main.Progress.Size = UDim2.new(0, progressWidth, 1, 0)
 					end
 				end
 			else
-				local finalSize = Location - Slider.Main.AbsolutePosition.X
-				if NewValue <= SliderSettings.Range[1] then
-   				 finalSize = 0
-				end
-				TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.3, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, finalSize, 1, 0)}):Play()
+				TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.3, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, Location - Slider.Main.AbsolutePosition.X > 5 and Location - Slider.Main.AbsolutePosition.X or 5, 1, 0)}):Play()
 				Loop:Disconnect()
 			end
 		end)
