@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming8
+	Damian | Programming9
 
 ]]
 
@@ -2838,11 +2838,11 @@ if infoElement and infoElement ~= "" then
     local InputScaled = textScaled or false
     --Input.Size = UDim2.new(1, -10, 0, InputHeight)
     
-    Dropdown.Title.Position = UDim2.new(0, 100,0, 11)
+    Dropdown.Title.Position = UDim2.new(0, 120,0, 11)
     Dropdown.Title.Size = UDim2.new(0, 200,0, 14)
     
 	InfoLabel.TextScaled = InputScaled
-    InfoLabel.Position = UDim2.new(0, 100,0, 29)
+    InfoLabel.Position = UDim2.new(0, 200,0, 29)
     InfoLabel.Size = UDim2.new(0.650, -24,0.206, 12)
     
     InfoLabel.Visible = true
@@ -3535,7 +3535,7 @@ if infoElement and infoElement ~= "" then
     
 	InfoLabel.TextScaled = InputScaled
     InfoLabel.Position = UDim2.new(0, 12,0, 29)
-    InfoLabel.Size = UDim2.new(0.3, -24,0.206, 12)
+    InfoLabel.Size = UDim2.new(0.35, -24,0.206, 12)
     
     InfoLabel.Visible = true
 end
