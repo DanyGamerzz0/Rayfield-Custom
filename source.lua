@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming16
+	Damian | Programming17
 
 ]]
 
@@ -1172,7 +1172,7 @@ function RayfieldLibrary:TopNotify(data)
         local topNotification = Instance.new("Frame")
         topNotification.Name = "TopNotification"
         topNotification.Size = UDim2.new(0, 400, 0, 60)
-        topNotification.Position = UDim2.new(0.5, -350, 0, -70) -- Start above screen
+        topNotification.Position = UDim2.new(0.5, -200, 0, -70) -- Start above screen
         topNotification.BackgroundColor3 = Color3.fromRGB(45, 50, 55)
 		topNotification.BackgroundTransparency = 0.5
         topNotification.BorderSizePixel = 0
@@ -1261,7 +1261,7 @@ function RayfieldLibrary:TopNotify(data)
         
         -- Slide down animation
         TweenService:Create(topNotification, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Position = UDim2.new(0.5, -200, 0, 20)
+            Position = UDim2.new(0.5, -400, 0, 20)
         }):Play()
         
         -- Auto-dismiss after duration
