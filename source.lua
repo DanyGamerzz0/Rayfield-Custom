@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming4
+	Damian | Programming5
 
 ]]
 
@@ -3357,7 +3357,7 @@ if infoElement and infoElement ~= "" then
     Toggle.Title.Size = UDim2.new(0, 200,0, 14)
     
 	InfoLabel.TextScaled = InputScaled
-    InfoLabel.Position = UDim2.new(0, 12,0, 27)
+    InfoLabel.Position = UDim2.new(0, 12,0, 29)
     InfoLabel.Size = UDim2.new(0.751, -24,0.206, 12)
     
     InfoLabel.Visible = true
@@ -3512,6 +3512,32 @@ function Tab:CreateSlider(SliderSettings)
 	Slider.BackgroundTransparency = 1
 	Slider.UIStroke.Transparency = 1
 	Slider.Title.TextTransparency = 1
+
+local infoElement = SliderSettings.Info
+local textScaled = SliderSettings.TextScaled
+
+if infoElement and infoElement ~= "" then
+    local InfoLabel = Slider.Title:Clone()
+    InfoLabel.Name = "InfoText"
+    InfoLabel.Text = SliderSettings.Info
+    InfoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    InfoLabel.TextTransparency = 0.6
+    InfoLabel.TextScaled = false
+    InfoLabel.TextSize = 11
+    InfoLabel.Parent = Slider
+    
+    local InputScaled = textScaled or false
+    --Input.Size = UDim2.new(1, -10, 0, InputHeight)
+    
+    Slider.Title.Position = UDim2.new(0, 12,0, 11)
+    Slider.Title.Size = UDim2.new(0, 200,0, 14)
+    
+	InfoLabel.TextScaled = InputScaled
+    InfoLabel.Position = UDim2.new(0, 12,0, 29)
+    InfoLabel.Size = UDim2.new(0.751, -24,0.206, 12)
+    
+    InfoLabel.Visible = true
+end
 
 	if SelectedTheme ~= RayfieldLibrary.Theme.Default then
 		Slider.Main.Shadow.Visible = false
