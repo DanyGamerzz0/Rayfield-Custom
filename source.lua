@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming3
+	Damian | Programming4
 
 ]]
 
@@ -2199,7 +2199,7 @@ if infoElement and infoElement ~= "" then
     Button.Title.Size = UDim2.new(0, 200,0, 14)
     
 	InfoLabel.TextScaled = InputScaled
-    InfoLabel.Position = UDim2.new(0, 12,0, 29)
+    InfoLabel.Position = UDim2.new(0, 12,0, 27)
     InfoLabel.Size = UDim2.new(0.751, -24,0.206, 12)
     
     InfoLabel.Visible = true
@@ -3338,26 +3338,27 @@ end)
 			end)
 
 local infoElement = ToggleSettings.Info
-local customHeight = ToggleSettings.InfoHeight
+local textScaled = ToggleSettings.TextScaled
 
 if infoElement and infoElement ~= "" then
     local InfoLabel = Toggle.Title:Clone()
     InfoLabel.Name = "InfoText"
     InfoLabel.Text = ToggleSettings.Info
-    InfoLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-    InfoLabel.TextTransparency = 0.4
+    InfoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    InfoLabel.TextTransparency = 0.6
     InfoLabel.TextScaled = false
     InfoLabel.TextSize = 11
     InfoLabel.Parent = Toggle
     
-    local ToggleHeight = customHeight or 50
-    Toggle.Size = UDim2.new(1, -10, 0, ToggleHeight)
+    local InputScaled = textScaled or false
+    --Input.Size = UDim2.new(1, -10, 0, InputHeight)
     
-    Toggle.Title.Position = UDim2.new(0, 12, 0, 7)
-    Toggle.Title.Size = UDim2.new(1, -24, 0, 16)
+    Toggle.Title.Position = UDim2.new(0, 12,0, 11)
+    Toggle.Title.Size = UDim2.new(0, 200,0, 14)
     
-    InfoLabel.Position = UDim2.new(0, 12, 0, ToggleHeight - 18)
-    InfoLabel.Size = UDim2.new(1, -24, 0, 12)
+	InfoLabel.TextScaled = InputScaled
+    InfoLabel.Position = UDim2.new(0, 12,0, 27)
+    InfoLabel.Size = UDim2.new(0.751, -24,0.206, 12)
     
     InfoLabel.Visible = true
 end
