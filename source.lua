@@ -6,7 +6,7 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming18
+	Damian | Programming19
 
 ]]
 
@@ -1174,7 +1174,7 @@ function RayfieldLibrary:TopNotify(data)
         topNotification.Size = UDim2.new(0, 400, 0, 60)
         topNotification.Position = UDim2.new(0.5, -200, 0, -70) -- Start above screen
         topNotification.BackgroundColor3 = Color3.fromRGB(45, 50, 55)
-		topNotification.BackgroundTransparency = 0.6
+		topNotification.BackgroundTransparency = 0.4
         topNotification.BorderSizePixel = 0
         topNotification.Parent = game.CoreGui:FindFirstChild("RobloxGui") or game.Players.LocalPlayer.PlayerGui
         
