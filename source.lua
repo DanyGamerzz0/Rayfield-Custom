@@ -6,8 +6,8 @@
 	shlex  | Designing + Programming
 	iRay   | Programming
 	Max    | Programming
-	Damian | Programming24
-
+	Damian | Programming
+	25
 ]]
 
 if debugX then
@@ -3694,6 +3694,7 @@ end
 	Slider.Main.Shadow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	Slider.Main.Progress.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
 	Slider.Main.Progress.UIStroke.Color = Color3.fromRGB(255, 255, 255)
+	Slider.Title.Size = UDim2.new(0, 200,0, 14)
 
 	TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
 	TweenService:Create(Slider.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
