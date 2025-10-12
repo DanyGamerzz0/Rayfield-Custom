@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---46.0f
+--47.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -3927,9 +3927,9 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     Collapsible.Visible = true
     Collapsible.Parent = TabPage
     Collapsible.Size = UDim2.new(1, -10, 0, 45)
-    Collapsible.ClipsDescendants = false  -- Important!
+    Collapsible.ClipsDescendants = false
     
-    -- Remove indicator and make room for arrow
+    -- Remove indicator and interact
     if Collapsible:FindFirstChild("ElementIndicator") then
         Collapsible.ElementIndicator:Destroy()
     end
@@ -3937,52 +3937,67 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         Collapsible.Interact:Destroy()
     end
     
-    -- Add arrow
+    -- Create a fixed header frame that doesn't move
+    local HeaderFrame = Instance.new("Frame")
+    HeaderFrame.Name = "HeaderFrame"
+    HeaderFrame.Size = UDim2.new(1, 0, 0, 45)
+    HeaderFrame.Position = UDim2.new(0, 0, 0, 0)
+    HeaderFrame.BackgroundTransparency = 1
+    HeaderFrame.Parent = Collapsible
+    HeaderFrame.ZIndex = Collapsible.ZIndex + 1
+    
+    -- Move arrow to header frame with fixed positioning
     local Arrow = Instance.new("ImageLabel")
     Arrow.Name = "Arrow"
     Arrow.Size = UDim2.new(0, 16, 0, 16)
-    Arrow.Position = UDim2.new(0, 12, 0.5, 0)
-    Arrow.AnchorPoint = Vector2.new(0, 0.5)
+    Arrow.Position = UDim2.new(0, 12, 0, 14)  -- Fixed Y position (centered in 45px header)
+    Arrow.AnchorPoint = Vector2.new(0, 0)
     Arrow.BackgroundTransparency = 1
     Arrow.Image = "rbxassetid://7072706318"
     Arrow.ImageColor3 = SelectedTheme.TextColor
     Arrow.Rotation = IsExpanded and 90 or 0
-    Arrow.Parent = Collapsible
+    Arrow.Parent = HeaderFrame
+    Arrow.ZIndex = HeaderFrame.ZIndex + 1
     
-    Collapsible.Title.Position = UDim2.new(0, 35, 0, 12)  -- Fixed Y position
+    -- Fix title positioning - also put in header frame
+    Collapsible.Title.Parent = HeaderFrame
+    Collapsible.Title.Position = UDim2.new(0, 35, 0, 14)  -- Fixed Y position
+    Collapsible.Title.Size = UDim2.new(1, -45, 0, 18)
     Collapsible.Title.TextXAlignment = Enum.TextXAlignment.Left
+    Collapsible.Title.TextYAlignment = Enum.TextYAlignment.Top
+    Collapsible.Title.ZIndex = HeaderFrame.ZIndex + 1
     
-    -- Make the entire header clickable
+    -- Make the header clickable
     local HeaderButton = Instance.new("TextButton")
-    HeaderButton.Size = UDim2.new(1, 0, 0, 45)  -- Fixed height
+    HeaderButton.Size = UDim2.new(1, 0, 0, 45)
     HeaderButton.Position = UDim2.new(0, 0, 0, 0)
     HeaderButton.BackgroundTransparency = 1
     HeaderButton.Text = ""
-    HeaderButton.ZIndex = 10
-    HeaderButton.Parent = Collapsible
+    HeaderButton.ZIndex = HeaderFrame.ZIndex + 2
+    HeaderButton.Parent = HeaderFrame
     
     -- Create container frame for child elements
-local Container = Instance.new("Frame")
-Container.Name = "CollapsibleContainer"
-Container.Size = UDim2.new(1, -20, 0, 0)  -- Subtract padding from width
-Container.Position = UDim2.new(0, 10, 0, 55)  -- 10px left padding, 55px from top
-Container.BackgroundTransparency = 1
-Container.BorderSizePixel = 0
-Container.ClipsDescendants = false
-Container.Parent = Collapsible
-Container.Visible = false
-Container.ZIndex = Collapsible.ZIndex
+    local Container = Instance.new("Frame")
+    Container.Name = "CollapsibleContainer"
+    Container.Size = UDim2.new(1, -20, 0, 0)
+    Container.Position = UDim2.new(0, 10, 0, 55)  -- 10px below header
+    Container.BackgroundTransparency = 1
+    Container.BorderSizePixel = 0
+    Container.ClipsDescendants = false
+    Container.Parent = Collapsible
+    Container.Visible = false
+    Container.ZIndex = Collapsible.ZIndex
     
     -- Add UIListLayout to container
-local ListLayout = Instance.new("UIListLayout")
-ListLayout.Parent = Container
-ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-ListLayout.Padding = UDim.new(0, 10)  -- Increased padding between elements
-ListLayout.FillDirection = Enum.FillDirection.Vertical
+    local ListLayout = Instance.new("UIListLayout")
+    ListLayout.Parent = Container
+    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    ListLayout.Padding = UDim.new(0, 10)
+    ListLayout.FillDirection = Enum.FillDirection.Vertical
     
     local childCount = 0
     
-    -- Simple visibility check
+    -- Visibility management
     local function ShouldBeVisible()
         if not Collapsible.Visible or Collapsible.Parent == nil then
             return false
@@ -3993,7 +4008,6 @@ ListLayout.FillDirection = Enum.FillDirection.Vertical
         return true
     end
     
-    -- Update container visibility
     local function UpdateVisibility()
         local shouldShow = ShouldBeVisible()
         Container.Visible = shouldShow
@@ -4005,37 +4019,36 @@ ListLayout.FillDirection = Enum.FillDirection.Vertical
         end
     end
     
-    -- Run visibility check every frame
     local heartbeatConnection = RunService.Heartbeat:Connect(function()
         UpdateVisibility()
     end)
     
-    -- Track total height of children and UPDATE COLLAPSIBLE SIZE
-local function UpdateContainerSize()
-    local totalHeight = 0
-    for _, child in ipairs(Container:GetChildren()) do
-        if child:IsA("GuiObject") and child.Visible and child.ClassName ~= "UIListLayout" then
-            totalHeight = totalHeight + child.AbsoluteSize.Y
+    -- Update container and collapsible sizes
+    local function UpdateContainerSize()
+        local totalHeight = 0
+        for _, child in ipairs(Container:GetChildren()) do
+            if child:IsA("GuiObject") and child.Visible and child.ClassName ~= "UIListLayout" then
+                totalHeight = totalHeight + child.AbsoluteSize.Y
+            end
         end
+        
+        if childCount > 1 then
+            totalHeight = totalHeight + ((childCount - 1) * 10)
+        end
+        
+        Container.Size = UDim2.new(1, -20, 0, totalHeight)
+        
+        -- Update collapsible size
+        if IsExpanded and totalHeight > 0 then
+            Collapsible.Size = UDim2.new(1, -10, 0, 55 + totalHeight + 15)
+        else
+            Collapsible.Size = UDim2.new(1, -10, 0, 45)
+        end
+        
+        UpdateVisibility()
     end
-    -- Add padding between elements
-    if childCount > 1 then
-        totalHeight = totalHeight + ((childCount - 1) * 10)  -- Match UIListLayout padding
-    end
     
-    Container.Size = UDim2.new(1, -20, 0, totalHeight)
-    
-    -- Update the COLLAPSIBLE (parent) size to include container
-    if IsExpanded and totalHeight > 0 then
-        Collapsible.Size = UDim2.new(1, -10, 0, 55 + totalHeight + 15)  -- header + content + bottom padding
-    else
-        Collapsible.Size = UDim2.new(1, -10, 0, 45)  -- just header
-    end
-    
-    UpdateVisibility()
-end
-    
-    -- Function to update visibility with animation
+    -- Animation function
     local function UpdateCollapsible(animate)
         if animate == nil then animate = true end
         
@@ -4471,7 +4484,6 @@ end
         UpdateCollapsible(true)
     end
     
-    -- Initialize
     UpdateCollapsible(false)
     UpdateVisibility()
     
