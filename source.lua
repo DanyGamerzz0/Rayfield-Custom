@@ -3731,7 +3731,192 @@ end
 	
 	print("Created input box parented to TabPage")
 
-	function Tab:CreateCollapsible(CollapsibleSettings)
+	-- Handle input changes
+	local function HandleInput()
+		local InputValue = tonumber(InputBox.Text)
+		
+		if InputValue then
+			InputValue = math.clamp(InputValue, SliderSettings.Range[1], SliderSettings.Range[2])
+			InputValue = math.floor(InputValue / SliderSettings.Increment + 0.5) * (SliderSettings.Increment * 10000000) / 10000000
+			
+			SliderSettings:Set(InputValue)
+			InputBox.Text = tostring(InputValue)
+		else
+			InputBox.Text = tostring(SliderSettings.CurrentValue)
+		end
+	end
+
+	InputBox.FocusLost:Connect(HandleInput)
+	InputBox.InputEnded:Connect(function(inputObject)
+		if inputObject.KeyCode == Enum.KeyCode.Return then
+			HandleInput()
+		end
+	end)
+
+	if not SliderSettings.Suffix then
+		Slider.Main.Information.Text = tostring(SliderSettings.CurrentValue)
+	else
+		Slider.Main.Information.Text = tostring(SliderSettings.CurrentValue) .. " " .. SliderSettings.Suffix
+	end
+
+	Slider.MouseEnter:Connect(function()
+		TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackgroundHover}):Play()
+	end)
+
+	Slider.MouseLeave:Connect(function()
+		TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
+	end)
+
+	Slider.Main.Interact.InputBegan:Connect(function(Input)
+		if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then 
+			TweenService:Create(Slider.Main.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
+			TweenService:Create(Slider.Main.Progress.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
+			SLDragging = true 
+		end 
+	end)
+
+	Slider.Main.Interact.InputEnded:Connect(function(Input) 
+		if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then 
+			TweenService:Create(Slider.Main.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 0.4}):Play()
+			TweenService:Create(Slider.Main.Progress.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 0.3}):Play()
+			SLDragging = false 
+		end 
+	end)
+
+	Slider.Main.Interact.MouseButton1Down:Connect(function(X)
+		local Current = Slider.Main.Progress.AbsolutePosition.X + Slider.Main.Progress.AbsoluteSize.X
+		local Start = Current
+		local Location = X
+		local Loop; Loop = RunService.Stepped:Connect(function()
+			if SLDragging then
+				Location = UserInputService:GetMouseLocation().X
+				Current = Current + 0.025 * (Location - Start)
+
+				if Location < Slider.Main.AbsolutePosition.X then
+					Location = Slider.Main.AbsolutePosition.X
+				elseif Location > Slider.Main.AbsolutePosition.X + Slider.Main.AbsoluteSize.X then
+					Location = Slider.Main.AbsolutePosition.X + Slider.Main.AbsoluteSize.X
+				end
+
+				if Current < Slider.Main.AbsolutePosition.X + 5 then
+					Current = Slider.Main.AbsolutePosition.X + 5
+				elseif Current > Slider.Main.AbsolutePosition.X + Slider.Main.AbsoluteSize.X then
+					Current = Slider.Main.AbsolutePosition.X + Slider.Main.AbsoluteSize.X
+				end
+
+				if Current <= Location and (Location - Start) < 0 then
+					Start = Location
+				elseif Current >= Location and (Location - Start) > 0 then
+					Start = Location
+				end
+				TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.45, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, Current - Slider.Main.AbsolutePosition.X, 1, 0)}):Play()
+				local NewValue = SliderSettings.Range[1] + (Location - Slider.Main.AbsolutePosition.X) / Slider.Main.AbsoluteSize.X * (SliderSettings.Range[2] - SliderSettings.Range[1])
+
+				NewValue = math.floor(NewValue / SliderSettings.Increment + 0.5) * (SliderSettings.Increment * 10000000) / 10000000
+				NewValue = math.clamp(NewValue, SliderSettings.Range[1], SliderSettings.Range[2])
+
+				if not SliderSettings.Suffix then
+					Slider.Main.Information.Text = tostring(NewValue)
+				else
+					Slider.Main.Information.Text = tostring(NewValue) .. " " .. SliderSettings.Suffix
+				end
+
+				-- Update input box when dragging (only if not focused)
+				if not InputBox:IsFocused() then
+					InputBox.Text = tostring(NewValue)
+				end
+
+				if SliderSettings.CurrentValue ~= NewValue then
+					local Success, Response = pcall(function()
+						SliderSettings.Callback(NewValue)
+					end)
+					if not Success then
+						TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
+						TweenService:Create(Slider.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
+						Slider.Title.Text = "Callback Error"
+						print("Rayfield | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
+						warn('Check docs.sirius.menu for help with Rayfield specific development.')
+						task.wait(0.5)
+						Slider.Title.Text = SliderSettings.Name
+						TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
+						TweenService:Create(Slider.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
+					end
+
+					SliderSettings.CurrentValue = NewValue
+					if not SliderSettings.Ext then
+						SaveConfiguration()
+					end
+				end
+			else
+				TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.3, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, Location - Slider.Main.AbsolutePosition.X > 5 and Location - Slider.Main.AbsolutePosition.X or 5, 1, 0)}):Play()
+				Loop:Disconnect()
+			end
+		end)
+	end)
+
+	function SliderSettings:Set(NewVal)
+		local NewVal = math.clamp(NewVal, SliderSettings.Range[1], SliderSettings.Range[2])
+
+		TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.45, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, Slider.Main.AbsoluteSize.X * ((NewVal + SliderSettings.Range[1]) / (SliderSettings.Range[2] - SliderSettings.Range[1])) > 5 and Slider.Main.AbsoluteSize.X * (NewVal / (SliderSettings.Range[2] - SliderSettings.Range[1])) or 5, 1, 0)}):Play()
+		
+		if not SliderSettings.Suffix then
+			Slider.Main.Information.Text = tostring(NewVal)
+		else
+			Slider.Main.Information.Text = tostring(NewVal) .. " " .. SliderSettings.Suffix
+		end
+
+		-- Update input box when Set() is called (only if not focused)
+		if not InputBox:IsFocused() then
+			InputBox.Text = tostring(NewVal)
+		end
+
+		local Success, Response = pcall(function()
+			SliderSettings.Callback(NewVal)
+		end)
+
+		if not Success then
+			TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
+			TweenService:Create(Slider.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
+			Slider.Title.Text = "Callback Error"
+			print("Rayfield | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
+			warn('Check docs.sirius.menu for help with Rayfield specific development.')
+			task.wait(0.5)
+			Slider.Title.Text = SliderSettings.Name
+			TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
+			TweenService:Create(Slider.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
+		end
+
+		SliderSettings.CurrentValue = NewVal
+		if not SliderSettings.Ext then
+			SaveConfiguration()
+		end
+	end
+
+	if Settings.ConfigurationSaving then
+		if Settings.ConfigurationSaving.Enabled and SliderSettings.Flag then
+			RayfieldLibrary.Flags[SliderSettings.Flag] = SliderSettings
+		end
+	end
+
+	Rayfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
+		if SelectedTheme ~= RayfieldLibrary.Theme.Default then
+			Slider.Main.Shadow.Visible = false
+		end
+
+		Slider.Main.BackgroundColor3 = SelectedTheme.SliderBackground
+		Slider.Main.UIStroke.Color = SelectedTheme.SliderStroke
+		Slider.Main.Progress.UIStroke.Color = SelectedTheme.SliderStroke
+		Slider.Main.Progress.BackgroundColor3 = SelectedTheme.SliderProgress
+		
+		-- Update input box theme
+		InputBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+		InputBox.BorderColor3 = Color3.fromRGB(80, 80, 80)
+	end)
+
+	return SliderSettings
+end
+
+function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
     
@@ -4000,191 +4185,6 @@ end
     
     CollapsibleValue.Tab = CollapsibleTab
     return CollapsibleValue
-end
-
-	-- Handle input changes
-	local function HandleInput()
-		local InputValue = tonumber(InputBox.Text)
-		
-		if InputValue then
-			InputValue = math.clamp(InputValue, SliderSettings.Range[1], SliderSettings.Range[2])
-			InputValue = math.floor(InputValue / SliderSettings.Increment + 0.5) * (SliderSettings.Increment * 10000000) / 10000000
-			
-			SliderSettings:Set(InputValue)
-			InputBox.Text = tostring(InputValue)
-		else
-			InputBox.Text = tostring(SliderSettings.CurrentValue)
-		end
-	end
-
-	InputBox.FocusLost:Connect(HandleInput)
-	InputBox.InputEnded:Connect(function(inputObject)
-		if inputObject.KeyCode == Enum.KeyCode.Return then
-			HandleInput()
-		end
-	end)
-
-	if not SliderSettings.Suffix then
-		Slider.Main.Information.Text = tostring(SliderSettings.CurrentValue)
-	else
-		Slider.Main.Information.Text = tostring(SliderSettings.CurrentValue) .. " " .. SliderSettings.Suffix
-	end
-
-	Slider.MouseEnter:Connect(function()
-		TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackgroundHover}):Play()
-	end)
-
-	Slider.MouseLeave:Connect(function()
-		TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
-	end)
-
-	Slider.Main.Interact.InputBegan:Connect(function(Input)
-		if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then 
-			TweenService:Create(Slider.Main.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-			TweenService:Create(Slider.Main.Progress.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-			SLDragging = true 
-		end 
-	end)
-
-	Slider.Main.Interact.InputEnded:Connect(function(Input) 
-		if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then 
-			TweenService:Create(Slider.Main.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 0.4}):Play()
-			TweenService:Create(Slider.Main.Progress.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 0.3}):Play()
-			SLDragging = false 
-		end 
-	end)
-
-	Slider.Main.Interact.MouseButton1Down:Connect(function(X)
-		local Current = Slider.Main.Progress.AbsolutePosition.X + Slider.Main.Progress.AbsoluteSize.X
-		local Start = Current
-		local Location = X
-		local Loop; Loop = RunService.Stepped:Connect(function()
-			if SLDragging then
-				Location = UserInputService:GetMouseLocation().X
-				Current = Current + 0.025 * (Location - Start)
-
-				if Location < Slider.Main.AbsolutePosition.X then
-					Location = Slider.Main.AbsolutePosition.X
-				elseif Location > Slider.Main.AbsolutePosition.X + Slider.Main.AbsoluteSize.X then
-					Location = Slider.Main.AbsolutePosition.X + Slider.Main.AbsoluteSize.X
-				end
-
-				if Current < Slider.Main.AbsolutePosition.X + 5 then
-					Current = Slider.Main.AbsolutePosition.X + 5
-				elseif Current > Slider.Main.AbsolutePosition.X + Slider.Main.AbsoluteSize.X then
-					Current = Slider.Main.AbsolutePosition.X + Slider.Main.AbsoluteSize.X
-				end
-
-				if Current <= Location and (Location - Start) < 0 then
-					Start = Location
-				elseif Current >= Location and (Location - Start) > 0 then
-					Start = Location
-				end
-				TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.45, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, Current - Slider.Main.AbsolutePosition.X, 1, 0)}):Play()
-				local NewValue = SliderSettings.Range[1] + (Location - Slider.Main.AbsolutePosition.X) / Slider.Main.AbsoluteSize.X * (SliderSettings.Range[2] - SliderSettings.Range[1])
-
-				NewValue = math.floor(NewValue / SliderSettings.Increment + 0.5) * (SliderSettings.Increment * 10000000) / 10000000
-				NewValue = math.clamp(NewValue, SliderSettings.Range[1], SliderSettings.Range[2])
-
-				if not SliderSettings.Suffix then
-					Slider.Main.Information.Text = tostring(NewValue)
-				else
-					Slider.Main.Information.Text = tostring(NewValue) .. " " .. SliderSettings.Suffix
-				end
-
-				-- Update input box when dragging (only if not focused)
-				if not InputBox:IsFocused() then
-					InputBox.Text = tostring(NewValue)
-				end
-
-				if SliderSettings.CurrentValue ~= NewValue then
-					local Success, Response = pcall(function()
-						SliderSettings.Callback(NewValue)
-					end)
-					if not Success then
-						TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-						TweenService:Create(Slider.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-						Slider.Title.Text = "Callback Error"
-						print("Rayfield | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
-						warn('Check docs.sirius.menu for help with Rayfield specific development.')
-						task.wait(0.5)
-						Slider.Title.Text = SliderSettings.Name
-						TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
-						TweenService:Create(Slider.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
-					end
-
-					SliderSettings.CurrentValue = NewValue
-					if not SliderSettings.Ext then
-						SaveConfiguration()
-					end
-				end
-			else
-				TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.3, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, Location - Slider.Main.AbsolutePosition.X > 5 and Location - Slider.Main.AbsolutePosition.X or 5, 1, 0)}):Play()
-				Loop:Disconnect()
-			end
-		end)
-	end)
-
-	function SliderSettings:Set(NewVal)
-		local NewVal = math.clamp(NewVal, SliderSettings.Range[1], SliderSettings.Range[2])
-
-		TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.45, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, Slider.Main.AbsoluteSize.X * ((NewVal + SliderSettings.Range[1]) / (SliderSettings.Range[2] - SliderSettings.Range[1])) > 5 and Slider.Main.AbsoluteSize.X * (NewVal / (SliderSettings.Range[2] - SliderSettings.Range[1])) or 5, 1, 0)}):Play()
-		
-		if not SliderSettings.Suffix then
-			Slider.Main.Information.Text = tostring(NewVal)
-		else
-			Slider.Main.Information.Text = tostring(NewVal) .. " " .. SliderSettings.Suffix
-		end
-
-		-- Update input box when Set() is called (only if not focused)
-		if not InputBox:IsFocused() then
-			InputBox.Text = tostring(NewVal)
-		end
-
-		local Success, Response = pcall(function()
-			SliderSettings.Callback(NewVal)
-		end)
-
-		if not Success then
-			TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-			TweenService:Create(Slider.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-			Slider.Title.Text = "Callback Error"
-			print("Rayfield | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
-			warn('Check docs.sirius.menu for help with Rayfield specific development.')
-			task.wait(0.5)
-			Slider.Title.Text = SliderSettings.Name
-			TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
-			TweenService:Create(Slider.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
-		end
-
-		SliderSettings.CurrentValue = NewVal
-		if not SliderSettings.Ext then
-			SaveConfiguration()
-		end
-	end
-
-	if Settings.ConfigurationSaving then
-		if Settings.ConfigurationSaving.Enabled and SliderSettings.Flag then
-			RayfieldLibrary.Flags[SliderSettings.Flag] = SliderSettings
-		end
-	end
-
-	Rayfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
-		if SelectedTheme ~= RayfieldLibrary.Theme.Default then
-			Slider.Main.Shadow.Visible = false
-		end
-
-		Slider.Main.BackgroundColor3 = SelectedTheme.SliderBackground
-		Slider.Main.UIStroke.Color = SelectedTheme.SliderStroke
-		Slider.Main.Progress.UIStroke.Color = SelectedTheme.SliderStroke
-		Slider.Main.Progress.BackgroundColor3 = SelectedTheme.SliderProgress
-		
-		-- Update input box theme
-		InputBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-		InputBox.BorderColor3 = Color3.fromRGB(80, 80, 80)
-	end)
-
-	return SliderSettings
 end
 
 		Rayfield.Main:GetPropertyChangedSignal('BackgroundColor3'):Connect(function()
