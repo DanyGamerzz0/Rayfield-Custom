@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---40.0f
+--41.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -3968,7 +3968,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     Container.BorderSizePixel = 0
     Container.ClipsDescendants = false
     Container.Parent = TabPage
-    Container.Visible = IsExpanded
+    Container.Visible = false  -- Start hidden
     Container.LayoutOrder = Collapsible.LayoutOrder + 0.5
     
     -- Add UIListLayout to container
@@ -3979,19 +3979,25 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     ListLayout.FillDirection = Enum.FillDirection.Vertical
     
     local childCount = 0
+    local isDestroyed = false
     
     -- FIXED: Hook into Rayfield's minimize/hide system
     local function UpdateVisibilityState()
+        if isDestroyed or not Container or not Container.Parent then return end
+        
         -- Check if UI is minimized (Main size is small) or hidden
         local isMinimized = Main.Size.Y.Offset <= 100
         local isHidden = not Main.Visible or Hidden
         local isParentTabVisible = TabPage.Visible and Elements.UIPageLayout.CurrentPage == TabPage
         
-        -- Container should only be visible if everything is properly shown and expanded
-        if isMinimized or isHidden or not isParentTabVisible or not IsExpanded or not Collapsible.Visible then
+        -- Container should ALWAYS be hidden if UI is hidden/minimized
+        -- Only show if: not minimized, not hidden, tab is active, collapsible is expanded, and header is visible
+        if isMinimized or isHidden then
             Container.Visible = false
-        else
+        elseif isParentTabVisible and IsExpanded and Collapsible.Visible then
             Container.Visible = true
+        else
+            Container.Visible = false
         end
         
         -- Also hide/show child elements to match Rayfield's behavior
@@ -4006,23 +4012,41 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         end
     end
     
+    -- Create connections table to track all connections
+    local connections = {}
+    
     -- Monitor Main window size changes (for minimize detection)
-    Main:GetPropertyChangedSignal("Size"):Connect(UpdateVisibilityState)
+    table.insert(connections, Main:GetPropertyChangedSignal("Size"):Connect(UpdateVisibilityState))
     
     -- Monitor Main window visibility (for hide detection)
-    Main:GetPropertyChangedSignal("Visible"):Connect(UpdateVisibilityState)
+    table.insert(connections, Main:GetPropertyChangedSignal("Visible"):Connect(UpdateVisibilityState))
     
     -- Monitor TabPage visibility changes
-    TabPage:GetPropertyChangedSignal("Visible"):Connect(UpdateVisibilityState)
+    table.insert(connections, TabPage:GetPropertyChangedSignal("Visible"):Connect(UpdateVisibilityState))
     
     -- Monitor Collapsible visibility changes
-    Collapsible:GetPropertyChangedSignal("Visible"):Connect(UpdateVisibilityState)
+    table.insert(connections, Collapsible:GetPropertyChangedSignal("Visible"):Connect(UpdateVisibilityState))
     
     -- Monitor page changes (tab switching)
-    Elements.UIPageLayout:GetPropertyChangedSignal("CurrentPage"):Connect(UpdateVisibilityState)
+    table.insert(connections, Elements.UIPageLayout:GetPropertyChangedSignal("CurrentPage"):Connect(UpdateVisibilityState))
+    
+    -- Monitor Hidden variable changes
+    local hiddenCheckConnection
+    hiddenCheckConnection = RunService.Heartbeat:Connect(function()
+        if isDestroyed then
+            if hiddenCheckConnection then
+                hiddenCheckConnection:Disconnect()
+            end
+            return
+        end
+        UpdateVisibilityState()
+    end)
+    table.insert(connections, hiddenCheckConnection)
     
     -- Track total height of children
     local function UpdateContainerSize()
+        if isDestroyed or not Container or not Container.Parent then return end
+        
         local totalHeight = 0
         for _, child in ipairs(Container:GetChildren()) do
             if child:IsA("GuiObject") and child.Visible and child.ClassName ~= "UIListLayout" then
@@ -4036,15 +4060,16 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         
         if IsExpanded and totalHeight > 0 then
             Container.Size = UDim2.new(1, -10, 0, totalHeight)
-            UpdateVisibilityState()
         else
             Container.Size = UDim2.new(1, -10, 0, 0)
-            Container.Visible = false
         end
+        
+        UpdateVisibilityState()
     end
     
     -- FIXED: Function to update visibility
     local function UpdateCollapsible(animate)
+        if isDestroyed then return end
         if animate == nil then animate = true end
         
         if animate then
@@ -4056,7 +4081,6 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         end
         
         UpdateContainerSize()
-        UpdateVisibilityState()
     end
     
     -- Click handler
@@ -4088,6 +4112,19 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     TweenService:Create(Collapsible.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
     TweenService:Create(Collapsible.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
     TweenService:Create(Arrow, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {ImageTransparency = 0}):Play()
+    
+    -- Clean up when destroyed
+    Collapsible.Destroying:Connect(function()
+        isDestroyed = true
+        for _, conn in ipairs(connections) do
+            if conn and conn.Connected then
+                conn:Disconnect()
+            end
+        end
+        if Container and Container.Parent then
+            Container:Destroy()
+        end
+    end)
     
     -- Container-specific element creators
     local CollapsibleTab = {}
@@ -4473,7 +4510,8 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         UpdateCollapsible(true)
     end
     
-    -- Initialize
+    -- Initialize - start with container hidden
+    Container.Visible = false
     UpdateCollapsible(false)
     UpdateVisibilityState()
     
