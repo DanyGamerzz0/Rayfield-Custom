@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---31
+--32
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -3975,19 +3975,16 @@ function Tab:CreateCollapsible(CollapsibleSettings)
             
             -- Calculate total height of children
             local totalHeight = 0
+            local visibleCount = 0
+            
             for _, child in ipairs(ContentContainer:GetChildren()) do
-                if child:IsA("GuiObject") and child.Visible and child ~= ContentLayout then
+                if child:IsA("GuiObject") and child.Visible and child.ClassName ~= "UIListLayout" then
                     totalHeight = totalHeight + child.AbsoluteSize.Y
+                    visibleCount = visibleCount + 1
                 end
             end
             
             -- Add padding between elements
-            local visibleCount = 0
-            for _, child in ipairs(ContentContainer:GetChildren()) do
-                if child:IsA("GuiObject") and child.Visible and child ~= ContentLayout then
-                    visibleCount = visibleCount + 1
-                end
-            end
             if visibleCount > 1 then
                 totalHeight = totalHeight + ((visibleCount - 1) * ContentLayout.Padding.Offset)
             end
@@ -4006,26 +4003,26 @@ function Tab:CreateCollapsible(CollapsibleSettings)
             for _, childData in ipairs(ChildElements) do
                 if childData.element and childData.element.Parent then
                     pcall(function()
-                        TweenService:Create(childData.element, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
-                            BackgroundTransparency = 0
-                        }):Play()
+                        if childData.element.ClassName ~= "UIListLayout" then
+                            TweenService:Create(childData.element, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
+                                BackgroundTransparency = 0
+                            }):Play()
+                            
+                            local uiStroke = childData.element:FindFirstChild("UIStroke")
+                            if uiStroke then
+                                TweenService:Create(uiStroke, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
+                                    Transparency = 0
+                                }):Play()
+                            end
+                            
+                            local title = childData.element:FindFirstChild("Title")
+                            if title then
+                                TweenService:Create(title, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
+                                    TextTransparency = 0
+                                }):Play()
+                            end
+                        end
                     end)
-                    
-                    if childData.element:FindFirstChild("UIStroke") then
-                        pcall(function()
-                            TweenService:Create(childData.element.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
-                                Transparency = 0
-                            }):Play()
-                        end)
-                    end
-                    
-                    if childData.element:FindFirstChild("Title") then
-                        pcall(function()
-                            TweenService:Create(childData.element.Title, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
-                                TextTransparency = 0
-                            }):Play()
-                        end)
-                    end
                 end
             end
         else
@@ -4038,26 +4035,26 @@ function Tab:CreateCollapsible(CollapsibleSettings)
             for _, childData in ipairs(ChildElements) do
                 if childData.element and childData.element.Parent then
                     pcall(function()
-                        TweenService:Create(childData.element, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {
-                            BackgroundTransparency = 1
-                        }):Play()
+                        if childData.element.ClassName ~= "UIListLayout" then
+                            TweenService:Create(childData.element, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {
+                                BackgroundTransparency = 1
+                            }):Play()
+                            
+                            local uiStroke = childData.element:FindFirstChild("UIStroke")
+                            if uiStroke then
+                                TweenService:Create(uiStroke, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {
+                                    Transparency = 1
+                                }):Play()
+                            end
+                            
+                            local title = childData.element:FindFirstChild("Title")
+                            if title then
+                                TweenService:Create(title, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {
+                                    TextTransparency = 1
+                                }):Play()
+                            end
+                        end
                     end)
-                    
-                    if childData.element:FindFirstChild("UIStroke") then
-                        pcall(function()
-                            TweenService:Create(childData.element.UIStroke, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {
-                                Transparency = 1
-                            }):Play()
-                        end)
-                    end
-                    
-                    if childData.element:FindFirstChild("Title") then
-                        pcall(function()
-                            TweenService:Create(childData.element.Title, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {
-                                TextTransparency = 1
-                            }):Play()
-                        end)
-                    end
                 end
             end
             
