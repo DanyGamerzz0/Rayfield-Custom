@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---56.0f
+--57.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -3944,8 +3944,8 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     Arrow.Position = UDim2.new(0, 12, 0, 14.5)  -- Fixed Y position (centered in 45px)
     Arrow.AnchorPoint = Vector2.new(0, 0)
     Arrow.BackgroundTransparency = 1
-	local iconic = getIcon("chevron-right")
-    Arrow.Image = 'rbxassetid://'..iconic.id
+	--local iconic = getIcon("chevron-right")
+    --Arrow.Image = 'rbxassetid://'..iconic.id
     Arrow.ImageColor3 = SelectedTheme.TextColor
     Arrow.Rotation = IsExpanded and 90 or 0
     Arrow.Parent = Collapsible
