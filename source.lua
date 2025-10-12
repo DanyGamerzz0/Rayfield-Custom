@@ -3915,13 +3915,13 @@ end
 
 	return SliderSettings
 end
-
+--31
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
     
     -- Create the main collapsible container
-    local Collapsible = Elements.Template.Button:Clone() -- Reusing button template as base
+    local Collapsible = Elements.Template.Button:Clone()
     Collapsible.Name = "Collapsible_" .. CollapsibleSettings.Name
     Collapsible.Title.Text = CollapsibleSettings.Name
     Collapsible.Visible = true
@@ -3941,7 +3941,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     Arrow.AnchorPoint = Vector2.new(0, 0.5)
     Arrow.BackgroundTransparency = 1
     Arrow.Image = "rbxassetid://7072706318" -- Chevron right icon
-    Arrow.ImageColor3 = Color3.fromRGB(240, 240, 240)
+    Arrow.ImageColor3 = SelectedTheme.TextColor
     Arrow.Rotation = IsExpanded and 90 or 0
     Arrow.Parent = Collapsible
     
@@ -3953,12 +3953,11 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     local ContentContainer = Instance.new("Frame")
     ContentContainer.Name = "ContentContainer"
     ContentContainer.Size = UDim2.new(1, -10, 0, 0)
-    ContentContainer.Position = UDim2.new(0, 0, 0, 50)
     ContentContainer.BackgroundTransparency = 1
     ContentContainer.ClipsDescendants = true
     ContentContainer.Visible = IsExpanded
     ContentContainer.Parent = TabPage
-    ContentContainer.LayoutOrder = Collapsible.LayoutOrder + 0.5
+    ContentContainer.LayoutOrder = Collapsible.LayoutOrder + 1
     
     -- Add UIListLayout to content container
     local ContentLayout = Instance.new("UIListLayout")
@@ -3971,19 +3970,27 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     
     -- Animate collapsible
     local function UpdateCollapsible()
-        local TweenService = game:GetService("TweenService")
-        
         if IsExpanded then
             ContentContainer.Visible = true
             
             -- Calculate total height of children
             local totalHeight = 0
             for _, child in ipairs(ContentContainer:GetChildren()) do
-                if child:IsA("GuiObject") and child.Visible then
+                if child:IsA("GuiObject") and child.Visible and child ~= ContentLayout then
                     totalHeight = totalHeight + child.AbsoluteSize.Y
                 end
             end
-            totalHeight = totalHeight + (#ContentContainer:GetChildren() - 1) * ContentLayout.Padding.Offset
+            
+            -- Add padding between elements
+            local visibleCount = 0
+            for _, child in ipairs(ContentContainer:GetChildren()) do
+                if child:IsA("GuiObject") and child.Visible and child ~= ContentLayout then
+                    visibleCount = visibleCount + 1
+                end
+            end
+            if visibleCount > 1 then
+                totalHeight = totalHeight + ((visibleCount - 1) * ContentLayout.Padding.Offset)
+            end
             
             -- Animate expansion
             TweenService:Create(Arrow, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
@@ -3996,20 +4003,28 @@ function Tab:CreateCollapsible(CollapsibleSettings)
             
             -- Fade in children
             task.wait(0.1)
-            for _, child in ipairs(ChildElements) do
-                if child.element and child.element.Parent then
-                    TweenService:Create(child.element, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
-                        BackgroundTransparency = 0
-                    }):Play()
-                    if child.element:FindFirstChild("UIStroke") then
-                        TweenService:Create(child.element.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
-                            Transparency = 0
+            for _, childData in ipairs(ChildElements) do
+                if childData.element and childData.element.Parent then
+                    pcall(function()
+                        TweenService:Create(childData.element, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
+                            BackgroundTransparency = 0
                         }):Play()
+                    end)
+                    
+                    if childData.element:FindFirstChild("UIStroke") then
+                        pcall(function()
+                            TweenService:Create(childData.element.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
+                                Transparency = 0
+                            }):Play()
+                        end)
                     end
-                    if child.element:FindFirstChild("Title") then
-                        TweenService:Create(child.element.Title, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
-                            TextTransparency = 0
-                        }):Play()
+                    
+                    if childData.element:FindFirstChild("Title") then
+                        pcall(function()
+                            TweenService:Create(childData.element.Title, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
+                                TextTransparency = 0
+                            }):Play()
+                        end)
                     end
                 end
             end
@@ -4020,20 +4035,28 @@ function Tab:CreateCollapsible(CollapsibleSettings)
             }):Play()
             
             -- Fade out children first
-            for _, child in ipairs(ChildElements) do
-                if child.element and child.element.Parent then
-                    TweenService:Create(child.element, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {
-                        BackgroundTransparency = 1
-                    }):Play()
-                    if child.element:FindFirstChild("UIStroke") then
-                        TweenService:Create(child.element.UIStroke, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {
-                            Transparency = 1
+            for _, childData in ipairs(ChildElements) do
+                if childData.element and childData.element.Parent then
+                    pcall(function()
+                        TweenService:Create(childData.element, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {
+                            BackgroundTransparency = 1
                         }):Play()
+                    end)
+                    
+                    if childData.element:FindFirstChild("UIStroke") then
+                        pcall(function()
+                            TweenService:Create(childData.element.UIStroke, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {
+                                Transparency = 1
+                            }):Play()
+                        end)
                     end
-                    if child.element:FindFirstChild("Title") then
-                        TweenService:Create(child.element.Title, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {
-                            TextTransparency = 1
-                        }):Play()
+                    
+                    if childData.element:FindFirstChild("Title") then
+                        pcall(function()
+                            TweenService:Create(childData.element.Title, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {
+                                TextTransparency = 1
+                            }):Play()
+                        end)
                     end
                 end
             end
@@ -4056,16 +4079,14 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     
     -- Hover effects
     Collapsible.MouseEnter:Connect(function()
-        local TweenService = game:GetService("TweenService")
         TweenService:Create(Collapsible, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {
-            BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            BackgroundColor3 = SelectedTheme.ElementBackgroundHover
         }):Play()
     end)
     
     Collapsible.MouseLeave:Connect(function()
-        local TweenService = game:GetService("TweenService")
         TweenService:Create(Collapsible, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {
-            BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+            BackgroundColor3 = SelectedTheme.ElementBackground
         }):Play()
     end)
     
@@ -4075,20 +4096,16 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     Collapsible.Title.TextTransparency = 1
     Arrow.ImageTransparency = 1
     
-    local TweenService = game:GetService("TweenService")
     TweenService:Create(Collapsible, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
     TweenService:Create(Collapsible.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
     TweenService:Create(Collapsible.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
     TweenService:Create(Arrow, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {ImageTransparency = 0}):Play()
     
-    -- Helper function to add elements to collapsible
+    -- Helper functions to add elements to collapsible
     local CollapsibleTab = {}
     
-    -- Override TabPage for child creation
-    local OriginalTabPage = TabPage
-    
     function CollapsibleTab:CreateButton(ButtonSettings)
-        local button = Tab.CreateButton(Tab, ButtonSettings)
+        local button = Tab:CreateButton(ButtonSettings)
         button.Parent = ContentContainer
         table.insert(ChildElements, {element = button, type = "Button"})
         if IsExpanded then
@@ -4098,7 +4115,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     end
     
     function CollapsibleTab:CreateToggle(ToggleSettings)
-        local toggle = Tab.CreateToggle(Tab, ToggleSettings)
+        local toggle = Tab:CreateToggle(ToggleSettings)
         toggle.Parent = ContentContainer
         table.insert(ChildElements, {element = toggle, type = "Toggle"})
         if IsExpanded then
@@ -4108,7 +4125,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     end
     
     function CollapsibleTab:CreateSlider(SliderSettings)
-        local slider = Tab.CreateSlider(Tab, SliderSettings)
+        local slider = Tab:CreateSlider(SliderSettings)
         slider.Parent = ContentContainer
         table.insert(ChildElements, {element = slider, type = "Slider"})
         if IsExpanded then
@@ -4118,7 +4135,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     end
     
     function CollapsibleTab:CreateDropdown(DropdownSettings)
-        local dropdown = Tab.CreateDropdown(Tab, DropdownSettings)
+        local dropdown = Tab:CreateDropdown(DropdownSettings)
         dropdown.Parent = ContentContainer
         table.insert(ChildElements, {element = dropdown, type = "Dropdown"})
         if IsExpanded then
@@ -4128,7 +4145,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     end
     
     function CollapsibleTab:CreateInput(InputSettings)
-        local input = Tab.CreateInput(Tab, InputSettings)
+        local input = Tab:CreateInput(InputSettings)
         input.Parent = ContentContainer
         table.insert(ChildElements, {element = input, type = "Input"})
         if IsExpanded then
@@ -4137,34 +4154,14 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         return input
     end
     
-    function CollapsibleTab:CreateKeybind(KeybindSettings)
-        local keybind = Tab.CreateKeybind(Tab, KeybindSettings)
-        keybind.Parent = ContentContainer
-        table.insert(ChildElements, {element = keybind, type = "Keybind"})
-        if IsExpanded then
-            task.defer(UpdateCollapsible)
-        end
-        return keybind
-    end
-    
     function CollapsibleTab:CreateLabel(LabelText, Icon, Color, IgnoreTheme)
-        local label = Tab.CreateLabel(Tab, LabelText, Icon, Color, IgnoreTheme)
+        local label = Tab:CreateLabel(LabelText, Icon, Color, IgnoreTheme)
         label.Parent = ContentContainer
         table.insert(ChildElements, {element = label, type = "Label"})
         if IsExpanded then
             task.defer(UpdateCollapsible)
         end
         return label
-    end
-    
-    function CollapsibleTab:CreateParagraph(ParagraphSettings)
-        local paragraph = Tab.CreateParagraph(Tab, ParagraphSettings)
-        paragraph.Parent = ContentContainer
-        table.insert(ChildElements, {element = paragraph, type = "Paragraph"})
-        if IsExpanded then
-            task.defer(UpdateCollapsible)
-        end
-        return paragraph
     end
     
     function CollapsibleValue:SetExpanded(expanded)
@@ -4180,7 +4177,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     end
     
     if IsExpanded then
-        UpdateCollapsible()
+        task.defer(UpdateCollapsible)
     end
     
     CollapsibleValue.Tab = CollapsibleTab
