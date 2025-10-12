@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---49.0f
+--50.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -3953,7 +3953,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     Collapsible.Title.Position = UDim2.new(0, 35, 0, 15.5)  -- Fixed Y to center in 45px
     Collapsible.Title.Size = UDim2.new(1, -45, 0, 18)
     Collapsible.Title.TextXAlignment = Enum.TextXAlignment.Left
-    Collapsible.Title.TextYAlignment = Enum.TextYAlignment.Top
+    Collapsible.Title.TextYAlignment = Enum.TextYAlignment.Center
     
     -- Make the entire header clickable
     local HeaderButton = Instance.new("TextButton")
