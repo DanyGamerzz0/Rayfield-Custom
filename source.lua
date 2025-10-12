@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---39.9
+--40.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -3980,26 +3980,26 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     
     local childCount = 0
     
-    -- Hook into Rayfield's minimize/hide system
+    -- FIXED: Hook into Rayfield's minimize/hide system
     local function UpdateVisibilityState()
         -- Check if UI is minimized (Main size is small) or hidden
         local isMinimized = Main.Size.Y.Offset <= 100
         local isHidden = not Main.Visible or Hidden
+        local isParentTabVisible = TabPage.Visible and Elements.UIPageLayout.CurrentPage == TabPage
         
-        -- If minimized, hidden, or not expanded, hide container
-        if isMinimized or isHidden or not IsExpanded or not TabPage.Visible or not Collapsible.Visible then
+        -- Container should only be visible if everything is properly shown and expanded
+        if isMinimized or isHidden or not isParentTabVisible or not IsExpanded or not Collapsible.Visible then
             Container.Visible = false
         else
-            -- Only show if expanded and everything else is visible
             Container.Visible = true
         end
         
         -- Also hide/show child elements to match Rayfield's behavior
         for _, child in ipairs(Container:GetChildren()) do
-            if child:IsA("GuiObject") then
+            if child:IsA("GuiObject") and child.ClassName ~= "UIListLayout" then
                 if isMinimized or isHidden then
                     child.Visible = false
-                elseif IsExpanded then
+                elseif IsExpanded and Container.Visible then
                     child.Visible = true
                 end
             end
@@ -4018,11 +4018,14 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     -- Monitor Collapsible visibility changes
     Collapsible:GetPropertyChangedSignal("Visible"):Connect(UpdateVisibilityState)
     
+    -- Monitor page changes (tab switching)
+    Elements.UIPageLayout:GetPropertyChangedSignal("CurrentPage"):Connect(UpdateVisibilityState)
+    
     -- Track total height of children
     local function UpdateContainerSize()
         local totalHeight = 0
         for _, child in ipairs(Container:GetChildren()) do
-            if child:IsA("GuiObject") and child.Visible then
+            if child:IsA("GuiObject") and child.Visible and child.ClassName ~= "UIListLayout" then
                 totalHeight = totalHeight + child.AbsoluteSize.Y
             end
         end
@@ -4040,7 +4043,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         end
     end
     
-    -- Function to update visibility
+    -- FIXED: Function to update visibility
     local function UpdateCollapsible(animate)
         if animate == nil then animate = true end
         
@@ -4053,6 +4056,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         end
         
         UpdateContainerSize()
+        UpdateVisibilityState()
     end
     
     -- Click handler
@@ -4211,7 +4215,6 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         local CurrentValue = SliderSettings.CurrentValue or SliderSettings.Range[1]
         local SLDragging = false
         
-        -- Set initial value
         Slider.Main.Information.Text = not SliderSettings.Suffix and tostring(CurrentValue) or tostring(CurrentValue) .. " " .. SliderSettings.Suffix
         Slider.Main.Progress.Size = UDim2.new(0, Slider.Main.AbsoluteSize.X * ((CurrentValue - SliderSettings.Range[1]) / (SliderSettings.Range[2] - SliderSettings.Range[1])), 1, 0)
         
@@ -4283,7 +4286,6 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         Dropdown.Toggle.ImageColor3 = SelectedTheme.TextColor
         Dropdown.Toggle.Rotation = 180
         
-        -- Setup dropdown options
         for _, ununusedoption in ipairs(Dropdown.List:GetChildren()) do
             if ununusedoption.ClassName == "Frame" and ununusedoption.Name ~= "Placeholder" then
                 ununusedoption:Destroy()
@@ -4301,7 +4303,6 @@ function Tab:CreateCollapsible(CollapsibleSettings)
                 Dropdown.Selected.Text = Option
                 pcall(DropdownSettings.Callback, Option)
                 
-                -- Close dropdown
                 Dropdown.List.Visible = false
                 TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Size = UDim2.new(1, -10, 0, 45)}):Play()
                 TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Rotation = 180}):Play()
