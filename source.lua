@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---50.0f
+--51.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -3944,16 +3944,16 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     Arrow.Position = UDim2.new(0, 12, 0, 14.5)  -- Fixed Y position (centered in 45px)
     Arrow.AnchorPoint = Vector2.new(0, 0)
     Arrow.BackgroundTransparency = 1
-    Arrow.Image = "rbxassetid://7072706318"
+    Arrow.Image = "rbxassetid://16844850854"
     Arrow.ImageColor3 = SelectedTheme.TextColor
     Arrow.Rotation = IsExpanded and 90 or 0
     Arrow.Parent = Collapsible
     
     -- Fix title positioning - use fixed Y position
-    Collapsible.Title.Position = UDim2.new(0, 35, 0, 15.5)  -- Fixed Y to center in 45px
+    Collapsible.Title.Position = UDim2.new(0, 35, 0, 25.5)  -- Fixed Y to center in 45px
     Collapsible.Title.Size = UDim2.new(1, -45, 0, 18)
     Collapsible.Title.TextXAlignment = Enum.TextXAlignment.Left
-    Collapsible.Title.TextYAlignment = Enum.TextYAlignment.Center
+    Collapsible.Title.TextYAlignment = Enum.TextYAlignment.Left
     
     -- Make the entire header clickable
     local HeaderButton = Instance.new("TextButton")
