@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---36
+--37
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
