@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---35
+--36
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -3948,8 +3948,9 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     Collapsible.Title.Position = UDim2.new(0, 35, 0.5, 0)
     Collapsible.Title.TextXAlignment = Enum.TextXAlignment.Left
     
-    -- Store child elements
+    -- Store child elements and their base layout orders
     local ChildElements = {}
+    local BaseLayoutOrder = Collapsible.LayoutOrder or 0
     
     -- Function to update visibility
     local function UpdateCollapsible()
@@ -3997,52 +3998,58 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     -- Helper functions
     local CollapsibleTab = {}
     
+    -- Helper to add element to tracking
+    local function TrackElement(element)
+        BaseLayoutOrder = BaseLayoutOrder + 1
+        element.LayoutOrder = BaseLayoutOrder
+        element.Visible = IsExpanded
+        table.insert(ChildElements, element)
+        return element
+    end
+    
     function CollapsibleTab:CreateButton(ButtonSettings)
         local button = Tab:CreateButton(ButtonSettings)
-        button.LayoutOrder = Collapsible.LayoutOrder + #ChildElements + 1
-        button.Visible = IsExpanded
-        table.insert(ChildElements, button)
-        return button
+        return TrackElement(button)
     end
     
     function CollapsibleTab:CreateToggle(ToggleSettings)
         local toggle = Tab:CreateToggle(ToggleSettings)
-        toggle.LayoutOrder = Collapsible.LayoutOrder + #ChildElements + 1
-        toggle.Visible = IsExpanded
-        table.insert(ChildElements, toggle)
-        return toggle
+        return TrackElement(toggle)
     end
     
     function CollapsibleTab:CreateSlider(SliderSettings)
         local slider = Tab:CreateSlider(SliderSettings)
-        slider.LayoutOrder = Collapsible.LayoutOrder + #ChildElements + 1
-        slider.Visible = IsExpanded
-        table.insert(ChildElements, slider)
-        return slider
+        return TrackElement(slider)
     end
     
     function CollapsibleTab:CreateDropdown(DropdownSettings)
         local dropdown = Tab:CreateDropdown(DropdownSettings)
-        dropdown.LayoutOrder = Collapsible.LayoutOrder + #ChildElements + 1
-        dropdown.Visible = IsExpanded
-        table.insert(ChildElements, dropdown)
-        return dropdown
+        return TrackElement(dropdown)
     end
     
     function CollapsibleTab:CreateInput(InputSettings)
         local input = Tab:CreateInput(InputSettings)
-        input.LayoutOrder = Collapsible.LayoutOrder + #ChildElements + 1
-        input.Visible = IsExpanded
-        table.insert(ChildElements, input)
-        return input
+        return TrackElement(input)
     end
     
     function CollapsibleTab:CreateLabel(LabelText, Icon, Color, IgnoreTheme)
         local label = Tab:CreateLabel(LabelText, Icon, Color, IgnoreTheme)
-        label.LayoutOrder = Collapsible.LayoutOrder + #ChildElements + 1
-        label.Visible = IsExpanded
-        table.insert(ChildElements, label)
-        return label
+        return TrackElement(label)
+    end
+    
+    function CollapsibleTab:CreateKeybind(KeybindSettings)
+        local keybind = Tab:CreateKeybind(KeybindSettings)
+        return TrackElement(keybind)
+    end
+    
+    function CollapsibleTab:CreateColorPicker(ColorPickerSettings)
+        local colorpicker = Tab:CreateColorPicker(ColorPickerSettings)
+        return TrackElement(colorpicker)
+    end
+    
+    function CollapsibleTab:CreateParagraph(ParagraphSettings)
+        local paragraph = Tab:CreateParagraph(ParagraphSettings)
+        return TrackElement(paragraph)
     end
     
     function CollapsibleValue:SetExpanded(expanded)
