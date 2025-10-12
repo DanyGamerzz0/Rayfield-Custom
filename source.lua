@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---32
+--33
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -3955,7 +3955,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     ContentContainer.Size = UDim2.new(1, -10, 0, 0)
     ContentContainer.BackgroundTransparency = 1
     ContentContainer.ClipsDescendants = true
-    ContentContainer.Visible = IsExpanded
+    ContentContainer.Visible = false  -- Start hidden
     ContentContainer.Parent = TabPage
     ContentContainer.LayoutOrder = Collapsible.LayoutOrder + 1
     
@@ -3978,7 +3978,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
             local visibleCount = 0
             
             for _, child in ipairs(ContentContainer:GetChildren()) do
-                if child:IsA("GuiObject") and child.Visible and child.ClassName ~= "UIListLayout" then
+                if child:IsA("GuiObject") and child.ClassName ~= "UIListLayout" then
                     totalHeight = totalHeight + child.AbsoluteSize.Y
                     visibleCount = visibleCount + 1
                 end
@@ -3998,10 +3998,11 @@ function Tab:CreateCollapsible(CollapsibleSettings)
                 Size = UDim2.new(1, -10, 0, totalHeight)
             }):Play()
             
-            -- Fade in children
+            -- Show and fade in children
             task.wait(0.1)
             for _, childData in ipairs(ChildElements) do
                 if childData.element and childData.element.Parent then
+                    childData.element.Visible = true
                     pcall(function()
                         if childData.element.ClassName ~= "UIListLayout" then
                             TweenService:Create(childData.element, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
@@ -4031,7 +4032,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
                 Rotation = 0
             }):Play()
             
-            -- Fade out children first
+            -- Fade out and hide children first
             for _, childData in ipairs(ChildElements) do
                 if childData.element and childData.element.Parent then
                     pcall(function()
@@ -4064,6 +4065,12 @@ function Tab:CreateCollapsible(CollapsibleSettings)
             }):Play()
             
             task.wait(0.3)
+            -- Hide children
+            for _, childData in ipairs(ChildElements) do
+                if childData.element and childData.element.Parent then
+                    childData.element.Visible = false
+                end
+            end
             ContentContainer.Visible = false
         end
     end
@@ -4104,6 +4111,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     function CollapsibleTab:CreateButton(ButtonSettings)
         local button = Tab:CreateButton(ButtonSettings)
         button.Parent = ContentContainer
+        button.Visible = false  -- Start hidden
         table.insert(ChildElements, {element = button, type = "Button"})
         if IsExpanded then
             task.defer(UpdateCollapsible)
@@ -4114,6 +4122,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     function CollapsibleTab:CreateToggle(ToggleSettings)
         local toggle = Tab:CreateToggle(ToggleSettings)
         toggle.Parent = ContentContainer
+        toggle.Visible = false  -- Start hidden
         table.insert(ChildElements, {element = toggle, type = "Toggle"})
         if IsExpanded then
             task.defer(UpdateCollapsible)
@@ -4124,6 +4133,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     function CollapsibleTab:CreateSlider(SliderSettings)
         local slider = Tab:CreateSlider(SliderSettings)
         slider.Parent = ContentContainer
+        slider.Visible = false  -- Start hidden
         table.insert(ChildElements, {element = slider, type = "Slider"})
         if IsExpanded then
             task.defer(UpdateCollapsible)
@@ -4134,6 +4144,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     function CollapsibleTab:CreateDropdown(DropdownSettings)
         local dropdown = Tab:CreateDropdown(DropdownSettings)
         dropdown.Parent = ContentContainer
+        dropdown.Visible = false  -- Start hidden
         table.insert(ChildElements, {element = dropdown, type = "Dropdown"})
         if IsExpanded then
             task.defer(UpdateCollapsible)
@@ -4144,6 +4155,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     function CollapsibleTab:CreateInput(InputSettings)
         local input = Tab:CreateInput(InputSettings)
         input.Parent = ContentContainer
+        input.Visible = false  -- Start hidden
         table.insert(ChildElements, {element = input, type = "Input"})
         if IsExpanded then
             task.defer(UpdateCollapsible)
@@ -4154,6 +4166,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     function CollapsibleTab:CreateLabel(LabelText, Icon, Color, IgnoreTheme)
         local label = Tab:CreateLabel(LabelText, Icon, Color, IgnoreTheme)
         label.Parent = ContentContainer
+        label.Visible = false  -- Start hidden
         table.insert(ChildElements, {element = label, type = "Label"})
         if IsExpanded then
             task.defer(UpdateCollapsible)
@@ -4173,8 +4186,12 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         UpdateCollapsible()
     end
     
+    -- If default expanded, show the content after a brief delay
     if IsExpanded then
-        task.defer(UpdateCollapsible)
+        task.defer(function()
+            task.wait(0.1)
+            UpdateCollapsible()
+        end)
     end
     
     CollapsibleValue.Tab = CollapsibleTab
