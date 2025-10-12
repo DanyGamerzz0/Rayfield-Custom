@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---33
+--34
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -3940,7 +3940,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     Arrow.Position = UDim2.new(0, 12, 0.5, 0)
     Arrow.AnchorPoint = Vector2.new(0, 0.5)
     Arrow.BackgroundTransparency = 1
-    Arrow.Image = "rbxassetid://7072706318" -- Chevron right icon
+    Arrow.Image = "rbxassetid://7072706318"
     Arrow.ImageColor3 = SelectedTheme.TextColor
     Arrow.Rotation = IsExpanded and 90 or 0
     Arrow.Parent = Collapsible
@@ -3949,21 +3949,41 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     Collapsible.Title.Position = UDim2.new(0, 35, 0.5, 0)
     Collapsible.Title.TextXAlignment = Enum.TextXAlignment.Left
     
-    -- Create container for child elements
-    local ContentContainer = Instance.new("Frame")
+    -- Create a SPACER element that reserves space in the TabPage layout
+    local Spacer = Instance.new("Frame")
+    Spacer.Name = "CollapsibleSpacer"
+    Spacer.Size = UDim2.new(1, -10, 0, 0)
+    Spacer.BackgroundTransparency = 1
+    Spacer.BorderSizePixel = 0
+    Spacer.Parent = TabPage
+    Spacer.LayoutOrder = Collapsible.LayoutOrder + 1
+    
+    -- Create container for child elements (as direct child of Collapsible, not TabPage)
+    local ContentContainer = Instance.new("ScrollingFrame")
     ContentContainer.Name = "ContentContainer"
-    ContentContainer.Size = UDim2.new(1, -10, 0, 0)
+    ContentContainer.Size = UDim2.new(1, 0, 0, 0)
+    ContentContainer.Position = UDim2.new(0, 0, 1, 5)  -- Position below the collapsible header
     ContentContainer.BackgroundTransparency = 1
+    ContentContainer.BorderSizePixel = 0
+    ContentContainer.ScrollBarThickness = 4
+    ContentContainer.ScrollBarImageColor3 = SelectedTheme.TextColor
+    ContentContainer.ScrollBarImageTransparency = 0.7
+    ContentContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
     ContentContainer.ClipsDescendants = true
-    ContentContainer.Visible = false  -- Start hidden
-    ContentContainer.Parent = TabPage
-    ContentContainer.LayoutOrder = Collapsible.LayoutOrder + 1
+    ContentContainer.Visible = false
+    ContentContainer.Parent = Collapsible  -- Parent to Collapsible, not TabPage!
+    ContentContainer.ZIndex = 100  -- Ensure it renders above other elements
     
     -- Add UIListLayout to content container
     local ContentLayout = Instance.new("UIListLayout")
     ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
     ContentLayout.Padding = UDim.new(0, 8)
     ContentLayout.Parent = ContentContainer
+    
+    -- Update canvas size when content changes
+    ContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ContentContainer.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
+    end)
     
     -- Store reference to all child elements
     local ChildElements = {}
@@ -3989,13 +4009,22 @@ function Tab:CreateCollapsible(CollapsibleSettings)
                 totalHeight = totalHeight + ((visibleCount - 1) * ContentLayout.Padding.Offset)
             end
             
+            -- Cap height at 300 to allow scrolling for long lists
+            local finalHeight = math.min(totalHeight, 300)
+            
             -- Animate expansion
             TweenService:Create(Arrow, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
                 Rotation = 90
             }):Play()
             
+            -- Update spacer to reserve space in the layout
+            TweenService:Create(Spacer, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {
+                Size = UDim2.new(1, -10, 0, finalHeight + 5)
+            }):Play()
+            
+            -- Expand the content container
             TweenService:Create(ContentContainer, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {
-                Size = UDim2.new(1, -10, 0, totalHeight)
+                Size = UDim2.new(1, 0, 0, finalHeight)
             }):Play()
             
             -- Show and fade in children
@@ -4003,27 +4032,6 @@ function Tab:CreateCollapsible(CollapsibleSettings)
             for _, childData in ipairs(ChildElements) do
                 if childData.element and childData.element.Parent then
                     childData.element.Visible = true
-                    pcall(function()
-                        if childData.element.ClassName ~= "UIListLayout" then
-                            TweenService:Create(childData.element, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
-                                BackgroundTransparency = 0
-                            }):Play()
-                            
-                            local uiStroke = childData.element:FindFirstChild("UIStroke")
-                            if uiStroke then
-                                TweenService:Create(uiStroke, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
-                                    Transparency = 0
-                                }):Play()
-                            end
-                            
-                            local title = childData.element:FindFirstChild("Title")
-                            if title then
-                                TweenService:Create(title, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
-                                    TextTransparency = 0
-                                }):Play()
-                            end
-                        end
-                    end)
                 end
             end
         else
@@ -4032,45 +4040,26 @@ function Tab:CreateCollapsible(CollapsibleSettings)
                 Rotation = 0
             }):Play()
             
-            -- Fade out and hide children first
-            for _, childData in ipairs(ChildElements) do
-                if childData.element and childData.element.Parent then
-                    pcall(function()
-                        if childData.element.ClassName ~= "UIListLayout" then
-                            TweenService:Create(childData.element, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {
-                                BackgroundTransparency = 1
-                            }):Play()
-                            
-                            local uiStroke = childData.element:FindFirstChild("UIStroke")
-                            if uiStroke then
-                                TweenService:Create(uiStroke, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {
-                                    Transparency = 1
-                                }):Play()
-                            end
-                            
-                            local title = childData.element:FindFirstChild("Title")
-                            if title then
-                                TweenService:Create(title, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {
-                                    TextTransparency = 1
-                                }):Play()
-                            end
-                        end
-                    end)
-                end
-            end
-            
-            task.wait(0.2)
-            TweenService:Create(ContentContainer, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
-                Size = UDim2.new(1, -10, 0, 0)
-            }):Play()
-            
-            task.wait(0.3)
             -- Hide children
             for _, childData in ipairs(ChildElements) do
                 if childData.element and childData.element.Parent then
                     childData.element.Visible = false
                 end
             end
+            
+            task.wait(0.1)
+            
+            -- Collapse spacer
+            TweenService:Create(Spacer, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
+                Size = UDim2.new(1, -10, 0, 0)
+            }):Play()
+            
+            -- Collapse content container
+            TweenService:Create(ContentContainer, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
+                Size = UDim2.new(1, 0, 0, 0)
+            }):Play()
+            
+            task.wait(0.3)
             ContentContainer.Visible = false
         end
     end
@@ -4111,7 +4100,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     function CollapsibleTab:CreateButton(ButtonSettings)
         local button = Tab:CreateButton(ButtonSettings)
         button.Parent = ContentContainer
-        button.Visible = false  -- Start hidden
+        button.Visible = false
         table.insert(ChildElements, {element = button, type = "Button"})
         if IsExpanded then
             task.defer(UpdateCollapsible)
@@ -4122,7 +4111,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     function CollapsibleTab:CreateToggle(ToggleSettings)
         local toggle = Tab:CreateToggle(ToggleSettings)
         toggle.Parent = ContentContainer
-        toggle.Visible = false  -- Start hidden
+        toggle.Visible = false
         table.insert(ChildElements, {element = toggle, type = "Toggle"})
         if IsExpanded then
             task.defer(UpdateCollapsible)
@@ -4133,7 +4122,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     function CollapsibleTab:CreateSlider(SliderSettings)
         local slider = Tab:CreateSlider(SliderSettings)
         slider.Parent = ContentContainer
-        slider.Visible = false  -- Start hidden
+        slider.Visible = false
         table.insert(ChildElements, {element = slider, type = "Slider"})
         if IsExpanded then
             task.defer(UpdateCollapsible)
@@ -4144,7 +4133,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     function CollapsibleTab:CreateDropdown(DropdownSettings)
         local dropdown = Tab:CreateDropdown(DropdownSettings)
         dropdown.Parent = ContentContainer
-        dropdown.Visible = false  -- Start hidden
+        dropdown.Visible = false
         table.insert(ChildElements, {element = dropdown, type = "Dropdown"})
         if IsExpanded then
             task.defer(UpdateCollapsible)
@@ -4155,7 +4144,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     function CollapsibleTab:CreateInput(InputSettings)
         local input = Tab:CreateInput(InputSettings)
         input.Parent = ContentContainer
-        input.Visible = false  -- Start hidden
+        input.Visible = false
         table.insert(ChildElements, {element = input, type = "Input"})
         if IsExpanded then
             task.defer(UpdateCollapsible)
@@ -4166,7 +4155,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     function CollapsibleTab:CreateLabel(LabelText, Icon, Color, IgnoreTheme)
         local label = Tab:CreateLabel(LabelText, Icon, Color, IgnoreTheme)
         label.Parent = ContentContainer
-        label.Visible = false  -- Start hidden
+        label.Visible = false
         table.insert(ChildElements, {element = label, type = "Label"})
         if IsExpanded then
             task.defer(UpdateCollapsible)
@@ -4186,7 +4175,6 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         UpdateCollapsible()
     end
     
-    -- If default expanded, show the content after a brief delay
     if IsExpanded then
         task.defer(function()
             task.wait(0.1)
