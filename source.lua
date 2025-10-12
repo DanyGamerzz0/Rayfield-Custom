@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---45.0f
+--46.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -3962,23 +3962,23 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     HeaderButton.Parent = Collapsible
     
     -- Create container frame for child elements
-	local Container = Instance.new("Frame")
-	Container.Name = "CollapsibleContainer"
-	Container.Size = UDim2.new(1, -20, 0, 0)  -- Subtract padding from width
-	Container.Position = UDim2.new(0, 10, 0, 53)  -- Add left padding and more top spacing
-	Container.BackgroundTransparency = 1
-	Container.BorderSizePixel = 0
-	Container.ClipsDescendants = false
-	Container.Parent = Collapsible
-	Container.Visible = false
-	Container.ZIndex = Collapsible.ZIndex
+local Container = Instance.new("Frame")
+Container.Name = "CollapsibleContainer"
+Container.Size = UDim2.new(1, -20, 0, 0)  -- Subtract padding from width
+Container.Position = UDim2.new(0, 10, 0, 55)  -- 10px left padding, 55px from top
+Container.BackgroundTransparency = 1
+Container.BorderSizePixel = 0
+Container.ClipsDescendants = false
+Container.Parent = Collapsible
+Container.Visible = false
+Container.ZIndex = Collapsible.ZIndex
     
     -- Add UIListLayout to container
-    local ListLayout = Instance.new("UIListLayout")
-    ListLayout.Parent = Container
-    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    ListLayout.Padding = UDim.new(0, 8)
-    ListLayout.FillDirection = Enum.FillDirection.Vertical
+local ListLayout = Instance.new("UIListLayout")
+ListLayout.Parent = Container
+ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ListLayout.Padding = UDim.new(0, 10)  -- Increased padding between elements
+ListLayout.FillDirection = Enum.FillDirection.Vertical
     
     local childCount = 0
     
@@ -4018,16 +4018,16 @@ local function UpdateContainerSize()
             totalHeight = totalHeight + child.AbsoluteSize.Y
         end
     end
-    -- Add padding
+    -- Add padding between elements
     if childCount > 1 then
-        totalHeight = totalHeight + ((childCount - 1) * 8)
+        totalHeight = totalHeight + ((childCount - 1) * 10)  -- Match UIListLayout padding
     end
     
     Container.Size = UDim2.new(1, -20, 0, totalHeight)
     
-    -- THIS IS THE KEY: Update the COLLAPSIBLE (parent) size to include container
+    -- Update the COLLAPSIBLE (parent) size to include container
     if IsExpanded and totalHeight > 0 then
-        Collapsible.Size = UDim2.new(1, -10, 0, 53 + totalHeight + 10)  -- header + content + bottom padding
+        Collapsible.Size = UDim2.new(1, -10, 0, 55 + totalHeight + 15)  -- header + content + bottom padding
     else
         Collapsible.Size = UDim2.new(1, -10, 0, 45)  -- just header
     end
