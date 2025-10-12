@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---44.0f
+--45.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -3962,16 +3962,16 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     HeaderButton.Parent = Collapsible
     
     -- Create container frame for child elements
-    local Container = Instance.new("Frame")
-    Container.Name = "CollapsibleContainer"
-    Container.Size = UDim2.new(1, 0, 0, 0)
-    Container.Position = UDim2.new(0, 0, 0, 45)  -- Start right after the header
-    Container.BackgroundTransparency = 1
-    Container.BorderSizePixel = 0
-    Container.ClipsDescendants = false
-    Container.Parent = Collapsible
-    Container.Visible = false
-    Container.ZIndex = Collapsible.ZIndex
+	local Container = Instance.new("Frame")
+	Container.Name = "CollapsibleContainer"
+	Container.Size = UDim2.new(1, -20, 0, 0)  -- Subtract padding from width
+	Container.Position = UDim2.new(0, 10, 0, 53)  -- Add left padding and more top spacing
+	Container.BackgroundTransparency = 1
+	Container.BorderSizePixel = 0
+	Container.ClipsDescendants = false
+	Container.Parent = Collapsible
+	Container.Visible = false
+	Container.ZIndex = Collapsible.ZIndex
     
     -- Add UIListLayout to container
     local ListLayout = Instance.new("UIListLayout")
@@ -4011,29 +4011,29 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     end)
     
     -- Track total height of children and UPDATE COLLAPSIBLE SIZE
-    local function UpdateContainerSize()
-        local totalHeight = 0
-        for _, child in ipairs(Container:GetChildren()) do
-            if child:IsA("GuiObject") and child.Visible and child.ClassName ~= "UIListLayout" then
-                totalHeight = totalHeight + child.AbsoluteSize.Y
-            end
+local function UpdateContainerSize()
+    local totalHeight = 0
+    for _, child in ipairs(Container:GetChildren()) do
+        if child:IsA("GuiObject") and child.Visible and child.ClassName ~= "UIListLayout" then
+            totalHeight = totalHeight + child.AbsoluteSize.Y
         end
-        -- Add padding
-        if childCount > 1 then
-            totalHeight = totalHeight + ((childCount - 1) * 8)
-        end
-        
-        Container.Size = UDim2.new(1, 0, 0, totalHeight)
-        
-        -- THIS IS THE KEY: Update the COLLAPSIBLE (parent) size to include container
-        if IsExpanded and totalHeight > 0 then
-            Collapsible.Size = UDim2.new(1, -10, 0, 45 + totalHeight + 8)  -- header + content + spacing
-        else
-            Collapsible.Size = UDim2.new(1, -10, 0, 45)  -- just header
-        end
-        
-        UpdateVisibility()
     end
+    -- Add padding
+    if childCount > 1 then
+        totalHeight = totalHeight + ((childCount - 1) * 8)
+    end
+    
+    Container.Size = UDim2.new(1, -20, 0, totalHeight)
+    
+    -- THIS IS THE KEY: Update the COLLAPSIBLE (parent) size to include container
+    if IsExpanded and totalHeight > 0 then
+        Collapsible.Size = UDim2.new(1, -10, 0, 53 + totalHeight + 10)  -- header + content + bottom padding
+    else
+        Collapsible.Size = UDim2.new(1, -10, 0, 45)  -- just header
+    end
+    
+    UpdateVisibility()
+end
     
     -- Function to update visibility with animation
     local function UpdateCollapsible(animate)
