@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---38
+--39.9
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -3963,13 +3963,13 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     local Container = Instance.new("Frame")
     Container.Name = "CollapsibleContainer"
     Container.Size = UDim2.new(1, -10, 0, 0)
-    Container.Position = UDim2.new(0, 0, 0, 53) -- Position below header with padding
+    Container.Position = UDim2.new(0, 0, 0, 53)
     Container.BackgroundTransparency = 1
     Container.BorderSizePixel = 0
     Container.ClipsDescendants = false
     Container.Parent = TabPage
     Container.Visible = IsExpanded
-    Container.LayoutOrder = Collapsible.LayoutOrder + 0.5 -- Place right after header
+    Container.LayoutOrder = Collapsible.LayoutOrder + 0.5
     
     -- Add UIListLayout to container
     local ListLayout = Instance.new("UIListLayout")
@@ -3979,6 +3979,44 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     ListLayout.FillDirection = Enum.FillDirection.Vertical
     
     local childCount = 0
+    
+    -- Hook into Rayfield's minimize/hide system
+    local function UpdateVisibilityState()
+        -- Check if UI is minimized (Main size is small) or hidden
+        local isMinimized = Main.Size.Y.Offset <= 100
+        local isHidden = not Main.Visible or Hidden
+        
+        -- If minimized, hidden, or not expanded, hide container
+        if isMinimized or isHidden or not IsExpanded or not TabPage.Visible or not Collapsible.Visible then
+            Container.Visible = false
+        else
+            -- Only show if expanded and everything else is visible
+            Container.Visible = true
+        end
+        
+        -- Also hide/show child elements to match Rayfield's behavior
+        for _, child in ipairs(Container:GetChildren()) do
+            if child:IsA("GuiObject") then
+                if isMinimized or isHidden then
+                    child.Visible = false
+                elseif IsExpanded then
+                    child.Visible = true
+                end
+            end
+        end
+    end
+    
+    -- Monitor Main window size changes (for minimize detection)
+    Main:GetPropertyChangedSignal("Size"):Connect(UpdateVisibilityState)
+    
+    -- Monitor Main window visibility (for hide detection)
+    Main:GetPropertyChangedSignal("Visible"):Connect(UpdateVisibilityState)
+    
+    -- Monitor TabPage visibility changes
+    TabPage:GetPropertyChangedSignal("Visible"):Connect(UpdateVisibilityState)
+    
+    -- Monitor Collapsible visibility changes
+    Collapsible:GetPropertyChangedSignal("Visible"):Connect(UpdateVisibilityState)
     
     -- Track total height of children
     local function UpdateContainerSize()
@@ -3995,7 +4033,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         
         if IsExpanded and totalHeight > 0 then
             Container.Size = UDim2.new(1, -10, 0, totalHeight)
-            Container.Visible = true
+            UpdateVisibilityState()
         else
             Container.Size = UDim2.new(1, -10, 0, 0)
             Container.Visible = false
@@ -4230,6 +4268,103 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         return CreateInContainer(function() return Slider end)
     end
     
+    function CollapsibleTab:CreateDropdown(DropdownSettings)
+        local Dropdown = Elements.Template.Dropdown:Clone()
+        Dropdown.Name = DropdownSettings.Name
+        Dropdown.Title.Text = DropdownSettings.Name
+        Dropdown.Visible = true
+        
+        Dropdown.BackgroundTransparency = 0
+        Dropdown.UIStroke.Transparency = 0
+        Dropdown.Title.TextTransparency = 0
+        
+        Dropdown.List.Visible = false
+        Dropdown.Selected.Text = DropdownSettings.CurrentOption or "None"
+        Dropdown.Toggle.ImageColor3 = SelectedTheme.TextColor
+        Dropdown.Toggle.Rotation = 180
+        
+        -- Setup dropdown options
+        for _, ununusedoption in ipairs(Dropdown.List:GetChildren()) do
+            if ununusedoption.ClassName == "Frame" and ununusedoption.Name ~= "Placeholder" then
+                ununusedoption:Destroy()
+            end
+        end
+        
+        for _, Option in ipairs(DropdownSettings.Options) do
+            local DropdownOption = Elements.Template.Dropdown.List.Template:Clone()
+            DropdownOption.Name = Option
+            DropdownOption.Title.Text = Option
+            DropdownOption.Parent = Dropdown.List
+            DropdownOption.Visible = true
+            
+            DropdownOption.Interact.MouseButton1Click:Connect(function()
+                Dropdown.Selected.Text = Option
+                pcall(DropdownSettings.Callback, Option)
+                
+                -- Close dropdown
+                Dropdown.List.Visible = false
+                TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Size = UDim2.new(1, -10, 0, 45)}):Play()
+                TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Rotation = 180}):Play()
+            end)
+        end
+        
+        Dropdown.Interact.MouseButton1Click:Connect(function()
+            if Dropdown.List.Visible then
+                TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Size = UDim2.new(1, -10, 0, 45)}):Play()
+                TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Rotation = 180}):Play()
+                task.wait(0.3)
+                Dropdown.List.Visible = false
+            else
+                TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Size = UDim2.new(1, -10, 0, 180)}):Play()
+                Dropdown.List.Visible = true
+                TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Rotation = 0}):Play()
+            end
+        end)
+        
+        Dropdown.MouseEnter:Connect(function()
+            TweenService:Create(Dropdown, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackgroundHover}):Play()
+        end)
+        
+        Dropdown.MouseLeave:Connect(function()
+            TweenService:Create(Dropdown, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
+        end)
+        
+        return CreateInContainer(function() return Dropdown end)
+    end
+    
+    function CollapsibleTab:CreateInput(InputSettings)
+        local Input = Elements.Template.Input:Clone()
+        Input.Name = InputSettings.Name
+        Input.Title.Text = InputSettings.Name
+        Input.Visible = true
+        
+        Input.BackgroundTransparency = 0
+        Input.UIStroke.Transparency = 0
+        Input.Title.TextTransparency = 0
+        
+        Input.InputFrame.BackgroundColor3 = SelectedTheme.InputBackground
+        Input.InputFrame.UIStroke.Color = SelectedTheme.InputStroke
+        Input.InputFrame.InputBox.PlaceholderText = InputSettings.PlaceholderText or ""
+        Input.InputFrame.InputBox.Text = InputSettings.CurrentValue or ""
+        
+        Input.InputFrame.InputBox.FocusLost:Connect(function()
+            pcall(InputSettings.Callback, Input.InputFrame.InputBox.Text)
+            if InputSettings.RemoveTextAfterFocusLost then
+                Input.InputFrame.InputBox.Text = ""
+            end
+        end)
+        
+        Input.MouseEnter:Connect(function()
+            TweenService:Create(Input, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackgroundHover}):Play()
+        end)
+        
+        Input.MouseLeave:Connect(function()
+            TweenService:Create(Input, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
+        end)
+        
+        return CreateInContainer(function() return Input end)
+    end
+    
     function CollapsibleTab:CreateLabel(LabelText, Icon, Color, IgnoreTheme)
         local Label = Elements.Template.Label:Clone()
         Label.Title.Text = LabelText
@@ -4260,6 +4395,73 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         return CreateInContainer(function() return Label end)
     end
     
+    function CollapsibleTab:CreateKeybind(KeybindSettings)
+        local Keybind = Elements.Template.Keybind:Clone()
+        Keybind.Name = KeybindSettings.Name
+        Keybind.Title.Text = KeybindSettings.Name
+        Keybind.Visible = true
+        
+        Keybind.BackgroundTransparency = 0
+        Keybind.UIStroke.Transparency = 0
+        Keybind.Title.TextTransparency = 0
+        
+        Keybind.KeybindFrame.BackgroundColor3 = SelectedTheme.InputBackground
+        Keybind.KeybindFrame.UIStroke.Color = SelectedTheme.InputStroke
+        Keybind.KeybindFrame.KeybindBox.Text = KeybindSettings.CurrentKeybind or "None"
+        
+        local CheckingForKey = false
+        
+        Keybind.KeybindFrame.KeybindBox.Focused:Connect(function()
+            CheckingForKey = true
+            Keybind.KeybindFrame.KeybindBox.Text = ""
+        end)
+        
+        Keybind.KeybindFrame.KeybindBox.FocusLost:Connect(function()
+            CheckingForKey = false
+            if Keybind.KeybindFrame.KeybindBox.Text == "" then
+                Keybind.KeybindFrame.KeybindBox.Text = KeybindSettings.CurrentKeybind or "None"
+            end
+        end)
+        
+        UserInputService.InputBegan:Connect(function(input, processed)
+            if CheckingForKey and input.KeyCode ~= Enum.KeyCode.Unknown then
+                local SplitMessage = string.split(tostring(input.KeyCode), ".")
+                local NewKey = SplitMessage[3]
+                Keybind.KeybindFrame.KeybindBox.Text = NewKey
+                KeybindSettings.CurrentKeybind = NewKey
+                Keybind.KeybindFrame.KeybindBox:ReleaseFocus()
+                pcall(KeybindSettings.Callback, NewKey)
+            end
+        end)
+        
+        Keybind.MouseEnter:Connect(function()
+            TweenService:Create(Keybind, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackgroundHover}):Play()
+        end)
+        
+        Keybind.MouseLeave:Connect(function()
+            TweenService:Create(Keybind, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
+        end)
+        
+        return CreateInContainer(function() return Keybind end)
+    end
+    
+    function CollapsibleTab:CreateParagraph(ParagraphSettings)
+        local Paragraph = Elements.Template.Paragraph:Clone()
+        Paragraph.Title.Text = ParagraphSettings.Title
+        Paragraph.Content.Text = ParagraphSettings.Content
+        Paragraph.Visible = true
+        
+        Paragraph.BackgroundTransparency = 0
+        Paragraph.UIStroke.Transparency = 0
+        Paragraph.Title.TextTransparency = 0
+        Paragraph.Content.TextTransparency = 0
+        
+        Paragraph.BackgroundColor3 = SelectedTheme.SecondaryElementBackground
+        Paragraph.UIStroke.Color = SelectedTheme.SecondaryElementStroke
+        
+        return CreateInContainer(function() return Paragraph end)
+    end
+    
     function CollapsibleValue:SetExpanded(expanded)
         IsExpanded = expanded
         UpdateCollapsible(true)
@@ -4272,6 +4474,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     
     -- Initialize
     UpdateCollapsible(false)
+    UpdateVisibilityState()
     
     CollapsibleValue.Tab = CollapsibleTab
     return CollapsibleValue
