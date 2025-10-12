@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---47.0f
+--48.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -3937,50 +3937,38 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         Collapsible.Interact:Destroy()
     end
     
-    -- Create a fixed header frame that doesn't move
-    local HeaderFrame = Instance.new("Frame")
-    HeaderFrame.Name = "HeaderFrame"
-    HeaderFrame.Size = UDim2.new(1, 0, 0, 45)
-    HeaderFrame.Position = UDim2.new(0, 0, 0, 0)
-    HeaderFrame.BackgroundTransparency = 1
-    HeaderFrame.Parent = Collapsible
-    HeaderFrame.ZIndex = Collapsible.ZIndex + 1
-    
-    -- Move arrow to header frame with fixed positioning
+    -- Add arrow with FIXED vertical centering
     local Arrow = Instance.new("ImageLabel")
     Arrow.Name = "Arrow"
     Arrow.Size = UDim2.new(0, 16, 0, 16)
-    Arrow.Position = UDim2.new(0, 12, 0, 14)  -- Fixed Y position (centered in 45px header)
+    Arrow.Position = UDim2.new(0, 12, 0, 14.5)  -- Fixed Y position (centered in 45px)
     Arrow.AnchorPoint = Vector2.new(0, 0)
     Arrow.BackgroundTransparency = 1
     Arrow.Image = "rbxassetid://7072706318"
     Arrow.ImageColor3 = SelectedTheme.TextColor
     Arrow.Rotation = IsExpanded and 90 or 0
-    Arrow.Parent = HeaderFrame
-    Arrow.ZIndex = HeaderFrame.ZIndex + 1
+    Arrow.Parent = Collapsible
     
-    -- Fix title positioning - also put in header frame
-    Collapsible.Title.Parent = HeaderFrame
-    Collapsible.Title.Position = UDim2.new(0, 35, 0, 14)  -- Fixed Y position
+    -- Fix title positioning - use fixed Y position
+    Collapsible.Title.Position = UDim2.new(0, 35, 0, 13.5)  -- Fixed Y to center in 45px
     Collapsible.Title.Size = UDim2.new(1, -45, 0, 18)
     Collapsible.Title.TextXAlignment = Enum.TextXAlignment.Left
     Collapsible.Title.TextYAlignment = Enum.TextYAlignment.Top
-    Collapsible.Title.ZIndex = HeaderFrame.ZIndex + 1
     
-    -- Make the header clickable
+    -- Make the entire header clickable
     local HeaderButton = Instance.new("TextButton")
     HeaderButton.Size = UDim2.new(1, 0, 0, 45)
     HeaderButton.Position = UDim2.new(0, 0, 0, 0)
     HeaderButton.BackgroundTransparency = 1
     HeaderButton.Text = ""
-    HeaderButton.ZIndex = HeaderFrame.ZIndex + 2
-    HeaderButton.Parent = HeaderFrame
+    HeaderButton.ZIndex = 10
+    HeaderButton.Parent = Collapsible
     
     -- Create container frame for child elements
     local Container = Instance.new("Frame")
     Container.Name = "CollapsibleContainer"
     Container.Size = UDim2.new(1, -20, 0, 0)
-    Container.Position = UDim2.new(0, 10, 0, 55)  -- 10px below header
+    Container.Position = UDim2.new(0, 10, 0, 55)
     Container.BackgroundTransparency = 1
     Container.BorderSizePixel = 0
     Container.ClipsDescendants = false
@@ -3997,7 +3985,6 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     
     local childCount = 0
     
-    -- Visibility management
     local function ShouldBeVisible()
         if not Collapsible.Visible or Collapsible.Parent == nil then
             return false
@@ -4023,7 +4010,6 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         UpdateVisibility()
     end)
     
-    -- Update container and collapsible sizes
     local function UpdateContainerSize()
         local totalHeight = 0
         for _, child in ipairs(Container:GetChildren()) do
@@ -4038,7 +4024,6 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         
         Container.Size = UDim2.new(1, -20, 0, totalHeight)
         
-        -- Update collapsible size
         if IsExpanded and totalHeight > 0 then
             Collapsible.Size = UDim2.new(1, -10, 0, 55 + totalHeight + 15)
         else
@@ -4048,7 +4033,6 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         UpdateVisibility()
     end
     
-    -- Animation function
     local function UpdateCollapsible(animate)
         if animate == nil then animate = true end
         
@@ -4063,13 +4047,11 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         UpdateContainerSize()
     end
     
-    -- Click handler
     HeaderButton.MouseButton1Click:Connect(function()
         IsExpanded = not IsExpanded
         UpdateCollapsible(true)
     end)
     
-    -- Hover effects
     Collapsible.MouseEnter:Connect(function()
         TweenService:Create(Collapsible, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {
             BackgroundColor3 = SelectedTheme.ElementBackgroundHover
@@ -4082,7 +4064,6 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         }):Play()
     end)
     
-    -- Initial animation
     Collapsible.BackgroundTransparency = 1
     Collapsible.UIStroke.Transparency = 1
     Collapsible.Title.TextTransparency = 1
@@ -4093,7 +4074,6 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     TweenService:Create(Collapsible.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
     TweenService:Create(Arrow, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {ImageTransparency = 0}):Play()
     
-    -- Cleanup
     Collapsible.Destroying:Connect(function()
         heartbeatConnection:Disconnect()
         if Container and Container.Parent then
@@ -4101,10 +4081,9 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         end
     end)
     
-    -- Container-specific element creators
+    -- Container element creators
     local CollapsibleTab = {}
     
-    -- Helper to create element in container
     local function CreateInContainer(createFunc, ...)
         local element = createFunc(...)
         element.Parent = Container
