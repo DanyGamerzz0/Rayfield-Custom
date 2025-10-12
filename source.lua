@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---37
+--38
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -3927,10 +3927,14 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     Collapsible.Visible = true
     Collapsible.Parent = TabPage
     Collapsible.Size = UDim2.new(1, -10, 0, 45)
+    Collapsible.ClipsDescendants = false
     
-    -- Remove indicator
+    -- Remove indicator and make room for arrow
     if Collapsible:FindFirstChild("ElementIndicator") then
         Collapsible.ElementIndicator:Destroy()
+    end
+    if Collapsible:FindFirstChild("Interact") then
+        Collapsible.Interact:Destroy()
     end
     
     -- Add arrow
@@ -3948,27 +3952,75 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     Collapsible.Title.Position = UDim2.new(0, 35, 0.5, 0)
     Collapsible.Title.TextXAlignment = Enum.TextXAlignment.Left
     
-    -- Store child elements and their base layout orders
-    local ChildElements = {}
-    local BaseLayoutOrder = Collapsible.LayoutOrder or 0
+    -- Make the entire header clickable
+    local HeaderButton = Instance.new("TextButton")
+    HeaderButton.Size = UDim2.new(1, 0, 1, 0)
+    HeaderButton.BackgroundTransparency = 1
+    HeaderButton.Text = ""
+    HeaderButton.Parent = Collapsible
     
-    -- Function to update visibility
-    local function UpdateCollapsible()
-        TweenService:Create(Arrow, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
-            Rotation = IsExpanded and 90 or 0
-        }):Play()
-        
-        for _, child in ipairs(ChildElements) do
-            if child and child.Parent then
-                child.Visible = IsExpanded
+    -- Create container frame for child elements
+    local Container = Instance.new("Frame")
+    Container.Name = "CollapsibleContainer"
+    Container.Size = UDim2.new(1, -10, 0, 0)
+    Container.Position = UDim2.new(0, 0, 0, 53) -- Position below header with padding
+    Container.BackgroundTransparency = 1
+    Container.BorderSizePixel = 0
+    Container.ClipsDescendants = false
+    Container.Parent = TabPage
+    Container.Visible = IsExpanded
+    Container.LayoutOrder = Collapsible.LayoutOrder + 0.5 -- Place right after header
+    
+    -- Add UIListLayout to container
+    local ListLayout = Instance.new("UIListLayout")
+    ListLayout.Parent = Container
+    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    ListLayout.Padding = UDim.new(0, 8)
+    ListLayout.FillDirection = Enum.FillDirection.Vertical
+    
+    local childCount = 0
+    
+    -- Track total height of children
+    local function UpdateContainerSize()
+        local totalHeight = 0
+        for _, child in ipairs(Container:GetChildren()) do
+            if child:IsA("GuiObject") and child.Visible then
+                totalHeight = totalHeight + child.AbsoluteSize.Y
             end
+        end
+        -- Add padding
+        if childCount > 1 then
+            totalHeight = totalHeight + ((childCount - 1) * 8)
+        end
+        
+        if IsExpanded and totalHeight > 0 then
+            Container.Size = UDim2.new(1, -10, 0, totalHeight)
+            Container.Visible = true
+        else
+            Container.Size = UDim2.new(1, -10, 0, 0)
+            Container.Visible = false
         end
     end
     
+    -- Function to update visibility
+    local function UpdateCollapsible(animate)
+        if animate == nil then animate = true end
+        
+        if animate then
+            TweenService:Create(Arrow, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
+                Rotation = IsExpanded and 90 or 0
+            }):Play()
+        else
+            Arrow.Rotation = IsExpanded and 90 or 0
+        end
+        
+        UpdateContainerSize()
+    end
+    
     -- Click handler
-    Collapsible.Interact.MouseButton1Click:Connect(function()
+    HeaderButton.MouseButton1Click:Connect(function()
         IsExpanded = not IsExpanded
-        UpdateCollapsible()
+        UpdateCollapsible(true)
     end)
     
     -- Hover effects
@@ -3995,72 +4047,231 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     TweenService:Create(Collapsible.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
     TweenService:Create(Arrow, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {ImageTransparency = 0}):Play()
     
-    -- Helper functions
+    -- Container-specific element creators
     local CollapsibleTab = {}
     
-    -- Helper to add element to tracking
-    local function TrackElement(element)
-        BaseLayoutOrder = BaseLayoutOrder + 1
-        element.LayoutOrder = BaseLayoutOrder
-        element.Visible = IsExpanded
-        table.insert(ChildElements, element)
+    -- Helper to create element in container
+    local function CreateInContainer(createFunc, ...)
+        local element = createFunc(...)
+        element.Parent = Container
+        childCount = childCount + 1
+        element.LayoutOrder = childCount
+        
+        -- Monitor size changes
+        element:GetPropertyChangedSignal("Size"):Connect(UpdateContainerSize)
+        element:GetPropertyChangedSignal("Visible"):Connect(UpdateContainerSize)
+        
+        UpdateContainerSize()
         return element
     end
     
     function CollapsibleTab:CreateButton(ButtonSettings)
-        local button = Tab:CreateButton(ButtonSettings)
-        return TrackElement(button)
+        local Button = Elements.Template.Button:Clone()
+        Button.Name = ButtonSettings.Name
+        Button.Title.Text = ButtonSettings.Name
+        Button.Visible = true
+        
+        Button.BackgroundTransparency = 0
+        Button.UIStroke.Transparency = 0
+        Button.Title.TextTransparency = 0
+        
+        Button.Interact.MouseButton1Click:Connect(function()
+            local Success, Response = pcall(ButtonSettings.Callback)
+            if not Success then
+                warn("Button callback error:", Response)
+            end
+        end)
+        
+        Button.MouseEnter:Connect(function()
+            TweenService:Create(Button, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackgroundHover}):Play()
+        end)
+        
+        Button.MouseLeave:Connect(function()
+            TweenService:Create(Button, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
+        end)
+        
+        return CreateInContainer(function() return Button end)
     end
     
     function CollapsibleTab:CreateToggle(ToggleSettings)
-        local toggle = Tab:CreateToggle(ToggleSettings)
-        return TrackElement(toggle)
+        local Toggle = Elements.Template.Toggle:Clone()
+        Toggle.Name = ToggleSettings.Name
+        Toggle.Title.Text = ToggleSettings.Name
+        Toggle.Visible = true
+        
+        Toggle.BackgroundTransparency = 0
+        Toggle.UIStroke.Transparency = 0
+        Toggle.Title.TextTransparency = 0
+        Toggle.Switch.BackgroundColor3 = SelectedTheme.ToggleBackground
+        
+        if SelectedTheme ~= RayfieldLibrary.Theme.Default then
+            Toggle.Switch.Shadow.Visible = false
+        end
+        
+        local CurrentValue = ToggleSettings.CurrentValue or false
+        
+        if CurrentValue then
+            Toggle.Switch.Indicator.Position = UDim2.new(1, -20, 0.5, 0)
+            Toggle.Switch.Indicator.UIStroke.Color = SelectedTheme.ToggleEnabledStroke
+            Toggle.Switch.Indicator.BackgroundColor3 = SelectedTheme.ToggleEnabled
+            Toggle.Switch.UIStroke.Color = SelectedTheme.ToggleEnabledOuterStroke
+        else
+            Toggle.Switch.Indicator.Position = UDim2.new(1, -40, 0.5, 0)
+            Toggle.Switch.Indicator.UIStroke.Color = SelectedTheme.ToggleDisabledStroke
+            Toggle.Switch.Indicator.BackgroundColor3 = SelectedTheme.ToggleDisabled
+            Toggle.Switch.UIStroke.Color = SelectedTheme.ToggleDisabledOuterStroke
+        end
+        
+        Toggle.Interact.MouseButton1Click:Connect(function()
+            CurrentValue = not CurrentValue
+            
+            if CurrentValue then
+                TweenService:Create(Toggle.Switch.Indicator, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Position = UDim2.new(1, -20, 0.5, 0)}):Play()
+                TweenService:Create(Toggle.Switch.Indicator.UIStroke, TweenInfo.new(0.55, Enum.EasingStyle.Exponential), {Color = SelectedTheme.ToggleEnabledStroke}):Play()
+                TweenService:Create(Toggle.Switch.Indicator, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ToggleEnabled}):Play()
+                TweenService:Create(Toggle.Switch.UIStroke, TweenInfo.new(0.55, Enum.EasingStyle.Exponential), {Color = SelectedTheme.ToggleEnabledOuterStroke}):Play()
+            else
+                TweenService:Create(Toggle.Switch.Indicator, TweenInfo.new(0.45, Enum.EasingStyle.Quart), {Position = UDim2.new(1, -40, 0.5, 0)}):Play()
+                TweenService:Create(Toggle.Switch.Indicator.UIStroke, TweenInfo.new(0.55, Enum.EasingStyle.Exponential), {Color = SelectedTheme.ToggleDisabledStroke}):Play()
+                TweenService:Create(Toggle.Switch.Indicator, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ToggleDisabled}):Play()
+                TweenService:Create(Toggle.Switch.UIStroke, TweenInfo.new(0.55, Enum.EasingStyle.Exponential), {Color = SelectedTheme.ToggleDisabledOuterStroke}):Play()
+            end
+            
+            pcall(ToggleSettings.Callback, CurrentValue)
+        end)
+        
+        Toggle.MouseEnter:Connect(function()
+            TweenService:Create(Toggle, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackgroundHover}):Play()
+        end)
+        
+        Toggle.MouseLeave:Connect(function()
+            TweenService:Create(Toggle, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
+        end)
+        
+        return CreateInContainer(function() return Toggle end)
     end
     
     function CollapsibleTab:CreateSlider(SliderSettings)
-        local slider = Tab:CreateSlider(SliderSettings)
-        return TrackElement(slider)
-    end
-    
-    function CollapsibleTab:CreateDropdown(DropdownSettings)
-        local dropdown = Tab:CreateDropdown(DropdownSettings)
-        return TrackElement(dropdown)
-    end
-    
-    function CollapsibleTab:CreateInput(InputSettings)
-        local input = Tab:CreateInput(InputSettings)
-        return TrackElement(input)
+        local Slider = Elements.Template.Slider:Clone()
+        Slider.Name = SliderSettings.Name
+        Slider.Title.Text = SliderSettings.Name
+        Slider.Visible = true
+        
+        Slider.BackgroundTransparency = 0
+        Slider.UIStroke.Transparency = 0
+        Slider.Title.TextTransparency = 0
+        
+        Slider.Main.BackgroundColor3 = SelectedTheme.SliderBackground
+        Slider.Main.UIStroke.Color = SelectedTheme.SliderStroke
+        Slider.Main.Progress.UIStroke.Color = SelectedTheme.SliderStroke
+        Slider.Main.Progress.BackgroundColor3 = SelectedTheme.SliderProgress
+        
+        if SelectedTheme ~= RayfieldLibrary.Theme.Default then
+            Slider.Main.Shadow.Visible = false
+        end
+        
+        local CurrentValue = SliderSettings.CurrentValue or SliderSettings.Range[1]
+        local SLDragging = false
+        
+        -- Set initial value
+        Slider.Main.Information.Text = not SliderSettings.Suffix and tostring(CurrentValue) or tostring(CurrentValue) .. " " .. SliderSettings.Suffix
+        Slider.Main.Progress.Size = UDim2.new(0, Slider.Main.AbsoluteSize.X * ((CurrentValue - SliderSettings.Range[1]) / (SliderSettings.Range[2] - SliderSettings.Range[1])), 1, 0)
+        
+        Slider.Main.Interact.InputBegan:Connect(function(Input)
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then 
+                SLDragging = true 
+            end 
+        end)
+        
+        Slider.Main.Interact.InputEnded:Connect(function(Input) 
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then 
+                SLDragging = false 
+            end 
+        end)
+        
+        Slider.Main.Interact.MouseButton1Down:Connect(function()
+            local Loop; Loop = RunService.Stepped:Connect(function()
+                if SLDragging then
+                    local Location = UserInputService:GetMouseLocation().X
+                    
+                    if Location < Slider.Main.AbsolutePosition.X then
+                        Location = Slider.Main.AbsolutePosition.X
+                    elseif Location > Slider.Main.AbsolutePosition.X + Slider.Main.AbsoluteSize.X then
+                        Location = Slider.Main.AbsolutePosition.X + Slider.Main.AbsoluteSize.X
+                    end
+                    
+                    local Progress = Location - Slider.Main.AbsolutePosition.X
+                    TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.1, Enum.EasingStyle.Linear), {Size = UDim2.new(0, Progress > 5 and Progress or 5, 1, 0)}):Play()
+                    
+                    local NewValue = SliderSettings.Range[1] + (Progress / Slider.Main.AbsoluteSize.X) * (SliderSettings.Range[2] - SliderSettings.Range[1])
+                    NewValue = math.floor(NewValue / SliderSettings.Increment + 0.5) * SliderSettings.Increment
+                    NewValue = math.clamp(NewValue, SliderSettings.Range[1], SliderSettings.Range[2])
+                    
+                    Slider.Main.Information.Text = not SliderSettings.Suffix and tostring(NewValue) or tostring(NewValue) .. " " .. SliderSettings.Suffix
+                    
+                    if CurrentValue ~= NewValue then
+                        CurrentValue = NewValue
+                        pcall(SliderSettings.Callback, NewValue)
+                    end
+                else
+                    Loop:Disconnect()
+                end
+            end)
+        end)
+        
+        Slider.MouseEnter:Connect(function()
+            TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackgroundHover}):Play()
+        end)
+        
+        Slider.MouseLeave:Connect(function()
+            TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
+        end)
+        
+        return CreateInContainer(function() return Slider end)
     end
     
     function CollapsibleTab:CreateLabel(LabelText, Icon, Color, IgnoreTheme)
-        local label = Tab:CreateLabel(LabelText, Icon, Color, IgnoreTheme)
-        return TrackElement(label)
-    end
-    
-    function CollapsibleTab:CreateKeybind(KeybindSettings)
-        local keybind = Tab:CreateKeybind(KeybindSettings)
-        return TrackElement(keybind)
-    end
-    
-    function CollapsibleTab:CreateColorPicker(ColorPickerSettings)
-        local colorpicker = Tab:CreateColorPicker(ColorPickerSettings)
-        return TrackElement(colorpicker)
-    end
-    
-    function CollapsibleTab:CreateParagraph(ParagraphSettings)
-        local paragraph = Tab:CreateParagraph(ParagraphSettings)
-        return TrackElement(paragraph)
+        local Label = Elements.Template.Label:Clone()
+        Label.Title.Text = LabelText
+        Label.Visible = true
+        
+        Label.BackgroundColor3 = Color or SelectedTheme.SecondaryElementBackground
+        Label.UIStroke.Color = Color or SelectedTheme.SecondaryElementStroke
+        Label.BackgroundTransparency = Color and 0.8 or 0
+        Label.UIStroke.Transparency = Color and 0.7 or 0
+        Label.Title.TextTransparency = Color and 0.2 or 0
+        
+        if Icon then
+            Label.Title.Position = UDim2.new(0, 45, 0.5, 0)
+            Label.Title.Size = UDim2.new(1, -100, 0, 14)
+            Label.Icon.Visible = true
+            Label.Icon.ImageTransparency = 0.2
+            
+            if typeof(Icon) == 'string' and Icons then
+                local asset = getIcon(Icon)
+                Label.Icon.Image = 'rbxassetid://'..asset.id
+                Label.Icon.ImageRectOffset = asset.imageRectOffset
+                Label.Icon.ImageRectSize = asset.imageRectSize
+            else
+                Label.Icon.Image = getAssetUri(Icon)
+            end
+        end
+        
+        return CreateInContainer(function() return Label end)
     end
     
     function CollapsibleValue:SetExpanded(expanded)
         IsExpanded = expanded
-        UpdateCollapsible()
+        UpdateCollapsible(true)
     end
     
     function CollapsibleValue:Toggle()
         IsExpanded = not IsExpanded
-        UpdateCollapsible()
+        UpdateCollapsible(true)
     end
+    
+    -- Initialize
+    UpdateCollapsible(false)
     
     CollapsibleValue.Tab = CollapsibleTab
     return CollapsibleValue
