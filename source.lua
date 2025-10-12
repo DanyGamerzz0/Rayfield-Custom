@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---42.0f
+--43.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -3960,50 +3960,39 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     HeaderButton.Parent = Collapsible
     
     -- Create container frame for child elements
-    local Container = Instance.new("Frame")
-    Container.Name = "CollapsibleContainer"
-    Container.Size = UDim2.new(1, -10, 0, 0)
-    Container.Position = UDim2.new(0, 0, 0, 53)
-    Container.BackgroundTransparency = 1
-    Container.BorderSizePixel = 0
-    Container.ClipsDescendants = false
-    Container.Parent = TabPage
-    Container.Visible = false
-    Container.LayoutOrder = Collapsible.LayoutOrder + 0.5
+local Container = Instance.new("Frame")
+Container.Name = "CollapsibleContainer"
+Container.Size = UDim2.new(1, -10, 0, 0)
+Container.Position = UDim2.new(0, 0, 1, 8)  -- Position relative to Collapsible header
+Container.BackgroundTransparency = 1
+Container.BorderSizePixel = 0
+Container.ClipsDescendants = false
+Container.Parent = Collapsible  -- Parent to the header, not TabPage
+Container.Visible = false
+Container.ZIndex = Collapsible.ZIndex + 1
     
     -- Add UIListLayout to container
-    local ListLayout = Instance.new("UIListLayout")
-    ListLayout.Parent = Container
-    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    ListLayout.Padding = UDim.new(0, 8)
-    ListLayout.FillDirection = Enum.FillDirection.Vertical
+local ListLayout = Instance.new("UIListLayout")
+ListLayout.Parent = Container
+ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ListLayout.Padding = UDim.new(0, 8)
+ListLayout.FillDirection = Enum.FillDirection.Vertical
     
     local childCount = 0
     
-    -- Simple visibility check - runs constantly
-    local function ShouldBeVisible()
-        -- If main UI is hidden or minimized, container MUST be hidden
-        if not Main.Visible or Hidden or Main.Size.Y.Offset <= 100 then
-            return false
-        end
-        
-        -- If the tab isn't visible, hide container
-        if not TabPage.Visible or Elements.UIPageLayout.CurrentPage ~= TabPage then
-            return false
-        end
-        
-        -- If collapsible header isn't visible, hide container  
-        if not Collapsible.Visible then
-            return false
-        end
-        
-        -- Only show if expanded
-        if not IsExpanded then
-            return false
-        end
-        
-        return true
-    end
+local function ShouldBeVisible()
+	-- If collapsible header isn't visible, hide container  
+	if not Collapsible.Visible or Collapsible.Parent == nil then
+		return false
+	end
+	
+	-- Only show if expanded
+	if not IsExpanded then
+		return false
+	end
+	
+	return true
+end
     
     -- Update container visibility
     local function UpdateVisibility()
