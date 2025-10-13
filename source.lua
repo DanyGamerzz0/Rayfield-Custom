@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---yoo00
+--yoo000
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -4348,17 +4348,25 @@ end)
     end
     
 function CollapsibleTab:CreateDropdown(DropdownSettings)
+    print("Creating dropdown:", DropdownSettings.Name)
+    
     local Dropdown = Elements.Template.Dropdown:Clone()
     Dropdown.Name = DropdownSettings.Name
     Dropdown.Title.Text = DropdownSettings.Name
     Dropdown.Visible = true
     Dropdown.ClipsDescendants = false
     
+    -- Set main dropdown visibility
     Dropdown.BackgroundTransparency = 0
     Dropdown.UIStroke.Transparency = 0
     Dropdown.Title.TextTransparency = 0
-	Dropdown.Selected.TextTransparency = 0
-	Dropdown.Selected.TextColor3 = SelectedTheme.TextColor
+    Dropdown.Title.TextColor3 = SelectedTheme.TextColor
+    
+    -- CRITICAL: Make the selected text visible
+    Dropdown.Selected.TextTransparency = 0
+    Dropdown.Selected.TextColor3 = SelectedTheme.TextColor
+    
+    print("Selected text set to:", Dropdown.Selected.Text)
     
     Dropdown.List.Visible = false
 
@@ -4386,6 +4394,8 @@ function CollapsibleTab:CreateDropdown(DropdownSettings)
     else
         Dropdown.Selected.Text = DropdownSettings.CurrentOption[1] or "None"
     end
+    
+    print("Initial selected text:", Dropdown.Selected.Text)
 
     -- Configuration saving setup
     if Settings.ConfigurationSaving then
@@ -4425,46 +4435,41 @@ function CollapsibleTab:CreateDropdown(DropdownSettings)
         end
     end
     
-    -- Create options with proper visibility
-for _, Option in ipairs(DropdownSettings.Options) do
-    local DropdownOption = Elements.Template.Dropdown.List.Template:Clone()
-    DropdownOption.Name = Option
-    DropdownOption.Title.Text = Option
-    DropdownOption.Parent = Dropdown.List
-    DropdownOption.Visible = true
+    print("Creating options for:", DropdownSettings.Name)
+    print("Number of options:", #DropdownSettings.Options)
     
-    -- IMPORTANT: Set proper transparency values so text is visible
-    DropdownOption.BackgroundTransparency = 0
-    DropdownOption.UIStroke.Transparency = 0
-    DropdownOption.Title.TextTransparency = 0
-    DropdownOption.Title.TextColor3 = SelectedTheme.TextColor
-    
-    -- Set colors
-    if table.find(DropdownSettings.CurrentOption, Option) then
-        DropdownOption.BackgroundColor3 = SelectedTheme.DropdownSelected
-    else
-        DropdownOption.BackgroundColor3 = SelectedTheme.DropdownUnselected
-    end
-    
-    -- Set proper Z-index
-    Dropdown.List.ZIndex = 10
-    DropdownOption.ZIndex = 11
-    if DropdownOption:FindFirstChild("Interact") then
-        DropdownOption.Interact.ZIndex = 12
-    end
-end
-
-Dropdown.ZIndex = 8
-Dropdown.Interact.ZIndex = 9
-    
-    -- Handle option clicks
-    for _, DropdownOption in ipairs(Dropdown.List:GetChildren()) do
-        if DropdownOption.ClassName == "Frame" and DropdownOption.Name ~= "Placeholder" then
+    -- Create options
+    for i, Option in ipairs(DropdownSettings.Options) do
+        print("Creating option:", Option)
+        
+        local DropdownOption = Elements.Template.Dropdown.List.Template:Clone()
+        DropdownOption.Name = Option
+        DropdownOption.Title.Text = Option
+        DropdownOption.Visible = true
+        
+        -- Make everything visible
+        DropdownOption.BackgroundTransparency = 0
+        DropdownOption.UIStroke.Transparency = 0
+        DropdownOption.Title.TextTransparency = 0
+        DropdownOption.Title.TextColor3 = SelectedTheme.TextColor
+        
+        print("Option", i, "text:", DropdownOption.Title.Text, "transparency:", DropdownOption.Title.TextTransparency)
+        
+        -- Set colors
+        if table.find(DropdownSettings.CurrentOption, Option) then
+            DropdownOption.BackgroundColor3 = SelectedTheme.DropdownSelected
+        else
+            DropdownOption.BackgroundColor3 = SelectedTheme.DropdownUnselected
+        end
+        
+        DropdownOption.Parent = Dropdown.List
+        
+        -- Click handler
+        if DropdownOption:FindFirstChild("Interact") then
             DropdownOption.Interact.MouseButton1Click:Connect(function()
-                print("Clicked:", DropdownOption.Name)
-                if not Dropdown.List.Visible then return end
+                print("Clicked option:", Option)
                 
-                local Option = DropdownOption.Name
+                if not Dropdown.List.Visible then return end
                 
                 if not DropdownSettings.MultipleOptions and table.find(DropdownSettings.CurrentOption, Option) then 
                     return
@@ -4523,12 +4528,14 @@ Dropdown.Interact.ZIndex = 9
         end
     end
     
+    print("Options created. List children count:", #Dropdown.List:GetChildren())
+    
     -- Handle dropdown toggle
     Dropdown.Interact.MouseButton1Click:Connect(function()
         local HeaderButton = Collapsible:FindFirstChildOfClass("TextButton")
 
         if Dropdown.List.Visible then
-            -- Closing dropdown
+            print("Closing dropdown")
             TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Size = UDim2.new(1, -10, 0, 45)}):Play()
             TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Rotation = 180}):Play()
             task.wait(0.3)
@@ -4536,7 +4543,7 @@ Dropdown.Interact.ZIndex = 9
             Dropdown.Interact.Active = true
             if HeaderButton then HeaderButton.Active = true end
         else
-            -- Opening dropdown
+            print("Opening dropdown")
             TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Size = UDim2.new(1, -10, 0, 180)}):Play()
             Dropdown.List.Visible = true
             TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Rotation = 0}):Play()
