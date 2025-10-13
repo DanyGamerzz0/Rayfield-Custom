@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---55555.0f
+--54444.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -4434,6 +4434,7 @@ end)
         else
             DropdownOption.BackgroundColor3 = SelectedTheme.DropdownUnselected
         end
+	end
             
 DropdownOption.Interact.MouseButton1Click:Connect(function()
             if not DropdownSettings.MultipleOptions and table.find(DropdownSettings.CurrentOption, Option) then 
@@ -4490,7 +4491,6 @@ DropdownOption.Interact.MouseButton1Click:Connect(function()
                 SaveConfiguration()
             end
         end)
-    end
         
        Dropdown.Interact.MouseButton1Click:Connect(function()
         if Dropdown.List.Visible then
