@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---53333.0f
+--52222.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -4494,25 +4494,27 @@ DropdownOption.Interact.MouseButton1Click:Connect(function()
     end
         
 Dropdown.Interact.MouseButton1Click:Connect(function()
-    -- find the collapsible header button
     local HeaderButton = Collapsible:FindFirstChildOfClass("TextButton")
 
     if Dropdown.List.Visible then
-        -- Closing dropdown
-        TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Size = UDim2.new(1, -10, 0, 45)}):Play()
-        TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Rotation = 180}):Play()
+        -- 🔒 closing dropdown
+        TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential),
+            {Size = UDim2.new(1, -10, 0, 45)}):Play()
+        TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential),
+            {Rotation = 180}):Play()
         task.wait(0.3)
         Dropdown.List.Visible = false
+        Dropdown.Interact.Active = true -- re-enable main button
+        if HeaderButton then HeaderButton.Active = true end
 
-        task.wait(1)
-		if HeaderButton then HeaderButton.Active = true end
     else
-        -- Opening dropdown
-        TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Size = UDim2.new(1, -10, 0, 180)}):Play()
+        -- 🔓 opening dropdown
+        TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential),
+            {Size = UDim2.new(1, -10, 0, 180)}):Play()
         Dropdown.List.Visible = true
-        TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Rotation = 0}):Play()
-
-        -- Disable collapsible input so clicks go to dropdown options
+        TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential),
+            {Rotation = 0}):Play()
+        Dropdown.Interact.Active = false -- disable main button while open
         if HeaderButton then HeaderButton.Active = false end
     end
 end)
