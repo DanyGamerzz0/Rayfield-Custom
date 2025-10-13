@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---59.0f
+--60.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -4140,8 +4140,8 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         element.Parent = Container
         childCount = childCount + 1
         element.LayoutOrder = childCount
-        --element:GetPropertyChangedSignal("Size"):Connect(UpdateContainerSize)
-        --element:GetPropertyChangedSignal("Visible"):Connect(UpdateContainerSize)
+        element:GetPropertyChangedSignal("Size"):Connect(UpdateContainerSize)
+        element:GetPropertyChangedSignal("Visible"):Connect(UpdateContainerSize)
         UpdateContainerSize()
         return element
     end
