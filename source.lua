@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---5999.0f
+--58888.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -4336,11 +4336,10 @@ function Tab:CreateCollapsible(CollapsibleSettings)
             RayfieldLibrary.Flags[SliderSettings.Flag].CurrentValue = NewValue
         end
         pcall(SliderSettings.Callback, NewValue)
+    end
         if not SliderSettings.Ext then
             SaveConfiguration()
         end
-    end
-        
         return CreateInContainer(function() return Slider end)
     end
     
