@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---51111.0f
+--50000.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -4434,6 +4434,17 @@ end)
         else
             DropdownOption.BackgroundColor3 = SelectedTheme.DropdownUnselected
         end
+		Dropdown.List.ZIndex = 10
+		for _, DropdownOpt in ipairs(Dropdown.List:GetChildren()) do
+    if DropdownOpt:IsA("Frame") and DropdownOpt.Name ~= "Placeholder" then
+        DropdownOpt.ZIndex = 11
+        if DropdownOpt:FindFirstChild("Interact") then
+            DropdownOpt.Interact.ZIndex = 12
+        end
+    end
+end
+Dropdown.ZIndex = 8
+Dropdown.Interact.ZIndex = 9
             
 DropdownOption.Interact.MouseButton1Click:Connect(function()
 	print("Clicked:", Option)
