@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---48888.0f
+--47777.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -4435,14 +4435,7 @@ end)
             DropdownOption.BackgroundColor3 = SelectedTheme.DropdownUnselected
         end
 		Dropdown.List.ZIndex = 10
-for _, DropdownOpt in ipairs(Dropdown.List:GetChildren()) do
-    if DropdownOpt.ClassName == "Frame" and DropdownOpt.Name ~= "Placeholder" then
-        TweenService:Create(DropdownOpt, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1}):Play()
-        TweenService:Create(DropdownOpt.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-        TweenService:Create(DropdownOpt.Title, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
-    end
-end
-Dropdown.Selected.TextTransparency = 0
+
 Dropdown.ZIndex = 8
 Dropdown.Interact.ZIndex = 9
             
@@ -4534,6 +4527,13 @@ Dropdown.Interact.MouseButton1Click:Connect(function()
         TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential),
             {Size = UDim2.new(1, -10, 0, 180)}):Play()
         Dropdown.List.Visible = true
+		for _, DropdownOpt in ipairs(Dropdown.List:GetChildren()) do
+	if DropdownOpt.ClassName == "Frame" and DropdownOpt.Name ~= "Placeholder" then
+		TweenService:Create(DropdownOpt, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
+		TweenService:Create(DropdownOpt.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
+		TweenService:Create(DropdownOpt.Title, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
+	end
+end
         TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential),
             {Rotation = 0}):Play()
         Dropdown.Interact.Active = false -- disable main button while open
