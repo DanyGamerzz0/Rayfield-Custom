@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---yoo0
+--yoo00
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -4426,32 +4426,36 @@ function CollapsibleTab:CreateDropdown(DropdownSettings)
     end
     
     -- Create options with proper visibility
-    for _, Option in ipairs(DropdownSettings.Options) do
+for _, Option in ipairs(DropdownSettings.Options) do
     local DropdownOption = Elements.Template.Dropdown.List.Template:Clone()
     DropdownOption.Name = Option
     DropdownOption.Title.Text = Option
     DropdownOption.Parent = Dropdown.List
     DropdownOption.Visible = true
     
-    -- Set proper transparency and colors
+    -- IMPORTANT: Set proper transparency values so text is visible
     DropdownOption.BackgroundTransparency = 0
     DropdownOption.UIStroke.Transparency = 0
     DropdownOption.Title.TextTransparency = 0
-    DropdownOption.Title.TextColor3 = SelectedTheme.TextColor -- ADD THIS LINE
+    DropdownOption.Title.TextColor3 = SelectedTheme.TextColor
     
-    -- Set colors based on selection
+    -- Set colors
     if table.find(DropdownSettings.CurrentOption, Option) then
         DropdownOption.BackgroundColor3 = SelectedTheme.DropdownSelected
     else
         DropdownOption.BackgroundColor3 = SelectedTheme.DropdownUnselected
     end
     
-    -- IMPORTANT: Add interact handler HERE
-    DropdownOption.Interact.ZIndex = 12
+    -- Set proper Z-index
+    Dropdown.List.ZIndex = 10
+    DropdownOption.ZIndex = 11
+    if DropdownOption:FindFirstChild("Interact") then
+        DropdownOption.Interact.ZIndex = 12
+    end
 end
-    
-    Dropdown.ZIndex = 8
-    Dropdown.Interact.ZIndex = 9
+
+Dropdown.ZIndex = 8
+Dropdown.Interact.ZIndex = 9
     
     -- Handle option clicks
     for _, DropdownOption in ipairs(Dropdown.List:GetChildren()) do
