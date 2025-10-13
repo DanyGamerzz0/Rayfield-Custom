@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---59.0f
+--60.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -4183,25 +4183,87 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     end
     
     function CollapsibleTab:CreateLabel(LabelText, Icon, Color, IgnoreTheme)
-        local element = Tab:CreateLabel(LabelText, Icon, Color, IgnoreTheme)
-        element.Parent = Container
+        -- Create label manually since Tab:CreateLabel returns a value, not settings
+        local Label = Elements.Template.Label:Clone()
+        Label.Title.Text = LabelText
+        Label.Visible = true
+        Label.Parent = Container
+        
+        Label.BackgroundColor3 = Color or SelectedTheme.SecondaryElementBackground
+        Label.UIStroke.Color = Color or SelectedTheme.SecondaryElementStroke
+        Label.BackgroundTransparency = Color and 0.8 or 0
+        Label.UIStroke.Transparency = Color and 0.7 or 0
+        Label.Title.TextTransparency = Color and 0.2 or 0
+        
+        if Icon then
+            Label.Title.Position = UDim2.new(0, 45, 0.5, 0)
+            Label.Title.Size = UDim2.new(1, -100, 0, 14)
+            Label.Icon.Visible = true
+            Label.Icon.ImageTransparency = 0.2
+            
+            if typeof(Icon) == 'string' and Icons then
+                local asset = getIcon(Icon)
+                Label.Icon.Image = 'rbxassetid://'..asset.id
+                Label.Icon.ImageRectOffset = asset.imageRectOffset
+                Label.Icon.ImageRectSize = asset.imageRectSize
+            else
+                Label.Icon.Image = getAssetUri(Icon)
+            end
+        end
+        
         childCount = childCount + 1
-        element.LayoutOrder = childCount
-        element:GetPropertyChangedSignal("Size"):Connect(UpdateContainerSize)
-        element:GetPropertyChangedSignal("Visible"):Connect(UpdateContainerSize)
+        Label.LayoutOrder = childCount
         UpdateContainerSize()
-        return element
+        
+        local LabelValue = {}
+        function LabelValue:Set(NewLabel, NewIcon, NewColor)
+            Label.Title.Text = NewLabel
+            if NewColor then
+                Label.BackgroundColor3 = NewColor
+                Label.UIStroke.Color = NewColor
+            end
+            if NewIcon and Label:FindFirstChild('Icon') then
+                if typeof(NewIcon) == 'string' and Icons then
+                    local asset = getIcon(NewIcon)
+                    Label.Icon.Image = 'rbxassetid://'..asset.id
+                    Label.Icon.ImageRectOffset = asset.imageRectOffset
+                    Label.Icon.ImageRectSize = asset.imageRectSize
+                else
+                    Label.Icon.Image = getAssetUri(NewIcon)
+                end
+            end
+        end
+        
+        return LabelValue
     end
     
     function CollapsibleTab:CreateParagraph(ParagraphSettings)
-        local element = Tab:CreateParagraph(ParagraphSettings)
-        element.Parent = Container
+        -- Create paragraph manually
+        local Paragraph = Elements.Template.Paragraph:Clone()
+        Paragraph.Title.Text = ParagraphSettings.Title
+        Paragraph.Content.Text = ParagraphSettings.Content
+        Paragraph.Visible = true
+        Paragraph.Parent = Container
+        
+        Paragraph.BackgroundTransparency = 0
+        Paragraph.UIStroke.Transparency = 0
+        Paragraph.Title.TextTransparency = 0
+        Paragraph.Content.TextTransparency = 0
+        
+        Paragraph.BackgroundColor3 = SelectedTheme.SecondaryElementBackground
+        Paragraph.UIStroke.Color = SelectedTheme.SecondaryElementStroke
+        
         childCount = childCount + 1
-        element.LayoutOrder = childCount
-        element:GetPropertyChangedSignal("Size"):Connect(UpdateContainerSize)
-        element:GetPropertyChangedSignal("Visible"):Connect(UpdateContainerSize)
+        Paragraph.LayoutOrder = childCount
         UpdateContainerSize()
-        return element
+        
+        local ParagraphValue = {}
+        function ParagraphValue:Set(NewParagraphSettings)
+            Paragraph.Title.Text = NewParagraphSettings.Title
+            Paragraph.Content.Text = NewParagraphSettings.Content
+        end
+        
+        return ParagraphValue
     end
     
     function CollapsibleTab:CreateColorPicker(ColorPickerSettings)
