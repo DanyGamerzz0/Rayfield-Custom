@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---58888.0f
+--57777.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -4293,35 +4293,42 @@ function Tab:CreateCollapsible(CollapsibleSettings)
             end 
         end)
         
-        Slider.Main.Interact.MouseButton1Down:Connect(function()
-            local Loop; Loop = RunService.Stepped:Connect(function()
-                if SLDragging then
-                    local Location = UserInputService:GetMouseLocation().X
-                    
-                    if Location < Slider.Main.AbsolutePosition.X then
-                        Location = Slider.Main.AbsolutePosition.X
-                    elseif Location > Slider.Main.AbsolutePosition.X + Slider.Main.AbsoluteSize.X then
-                        Location = Slider.Main.AbsolutePosition.X + Slider.Main.AbsoluteSize.X
-                    end
-                    
-                    local Progress = Location - Slider.Main.AbsolutePosition.X
-                    TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.1, Enum.EasingStyle.Linear), {Size = UDim2.new(0, Progress > 5 and Progress or 5, 1, 0)}):Play()
-                    
-                    local NewValue = SliderSettings.Range[1] + (Progress / Slider.Main.AbsoluteSize.X) * (SliderSettings.Range[2] - SliderSettings.Range[1])
-                    NewValue = math.floor(NewValue / SliderSettings.Increment + 0.5) * SliderSettings.Increment
-                    NewValue = math.clamp(NewValue, SliderSettings.Range[1], SliderSettings.Range[2])
-                    
-                    Slider.Main.Information.Text = not SliderSettings.Suffix and tostring(NewValue) or tostring(NewValue) .. " " .. SliderSettings.Suffix
-                    
-                    if CurrentValue ~= NewValue then
-                        CurrentValue = NewValue
-                        pcall(SliderSettings.Callback, NewValue)
-                    end
-                else
-                    Loop:Disconnect()
+	Slider.Main.Interact.MouseButton1Down:Connect(function()
+    local Loop; Loop = RunService.Stepped:Connect(function()
+        if SLDragging then
+            local Location = UserInputService:GetMouseLocation().X
+            
+            if Location < Slider.Main.AbsolutePosition.X then
+                Location = Slider.Main.AbsolutePosition.X
+            elseif Location > Slider.Main.AbsolutePosition.X + Slider.Main.AbsoluteSize.X then
+                Location = Slider.Main.AbsolutePosition.X + Slider.Main.AbsoluteSize.X
+            end
+            
+            local Progress = Location - Slider.Main.AbsolutePosition.X
+            TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.1, Enum.EasingStyle.Linear), {Size = UDim2.new(0, Progress > 5 and Progress or 5, 1, 0)}):Play()
+            
+            local NewValue = SliderSettings.Range[1] + (Progress / Slider.Main.AbsoluteSize.X) * (SliderSettings.Range[2] - SliderSettings.Range[1])
+            NewValue = math.floor(NewValue / SliderSettings.Increment + 0.5) * SliderSettings.Increment
+            NewValue = math.clamp(NewValue, SliderSettings.Range[1], SliderSettings.Range[2])
+            
+            Slider.Main.Information.Text = not SliderSettings.Suffix and tostring(NewValue) or tostring(NewValue) .. " " .. SliderSettings.Suffix
+            
+            if CurrentValue ~= NewValue then
+                CurrentValue = NewValue
+                if SliderSettings.Flag and RayfieldLibrary.Flags[SliderSettings.Flag] then
+                    RayfieldLibrary.Flags[SliderSettings.Flag].CurrentValue = NewValue
                 end
-            end)
-        end)
+                pcall(SliderSettings.Callback, NewValue)
+            end
+        else
+            -- Save when dragging stops
+            if not SliderSettings.Ext then
+                SaveConfiguration()
+            end
+            Loop:Disconnect()
+        end
+    end)
+end)
         
         Slider.MouseEnter:Connect(function()
             TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackgroundHover}):Play()
@@ -4337,9 +4344,6 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         end
         pcall(SliderSettings.Callback, NewValue)
     end
-        if not SliderSettings.Ext then
-            SaveConfiguration()
-        end
         return CreateInContainer(function() return Slider end)
     end
     
@@ -4405,20 +4409,59 @@ function Tab:CreateCollapsible(CollapsibleSettings)
             DropdownOption.Title.Text = Option
             DropdownOption.Parent = Dropdown.List
             DropdownOption.Visible = true
+			DropdownOption.BackgroundTransparency = 0
+			DropdownOption.UIStroke.Transparency = 0
+			DropdownOption.Title.TextTransparency = 0
+			DropdownOption.ZIndex = Dropdown.List.ZIndex + 1
+			DropdownOption.Interact.ZIndex = DropdownOption.ZIndex + 1
             
-            DropdownOption.Interact.MouseButton1Click:Connect(function()
-                Dropdown.Selected.Text = Option
-				if DropdownSettings.Flag and RayfieldLibrary.Flags[DropdownSettings.Flag] then
-            RayfieldLibrary.Flags[DropdownSettings.Flag].CurrentOption = DropdownSettings.CurrentOption
-        end	
-                pcall(DropdownSettings.Callback, DropdownSettings.CurrentOption)
-                
-                Dropdown.List.Visible = false
-                TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Size = UDim2.new(1, -10, 0, 45)}):Play()
-                TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Rotation = 180}):Play()
-				
-            end)
+DropdownOption.Interact.MouseButton1Click:Connect(function()
+    -- Add the option to CurrentOption table
+    if not DropdownSettings.MultipleOptions and table.find(DropdownSettings.CurrentOption, Option) then 
+        return
+    end
+
+    if table.find(DropdownSettings.CurrentOption, Option) then
+        table.remove(DropdownSettings.CurrentOption, table.find(DropdownSettings.CurrentOption, Option))
+    else
+        if not DropdownSettings.MultipleOptions then
+            table.clear(DropdownSettings.CurrentOption)
         end
+        table.insert(DropdownSettings.CurrentOption, Option)
+    end
+
+    -- Update display text
+    if DropdownSettings.MultipleOptions then
+        if #DropdownSettings.CurrentOption == 1 then
+            Dropdown.Selected.Text = DropdownSettings.CurrentOption[1]
+        elseif #DropdownSettings.CurrentOption == 0 then
+            Dropdown.Selected.Text = "None"
+        else
+            Dropdown.Selected.Text = "Various"
+        end
+    else
+        Dropdown.Selected.Text = DropdownSettings.CurrentOption[1] or "None"
+    end
+
+    -- Update flag and save
+    if DropdownSettings.Flag and RayfieldLibrary.Flags[DropdownSettings.Flag] then
+        RayfieldLibrary.Flags[DropdownSettings.Flag].CurrentOption = DropdownSettings.CurrentOption
+    end	
+    
+    pcall(DropdownSettings.Callback, DropdownSettings.CurrentOption)
+    
+    -- Close dropdown if not multi-select
+    if not DropdownSettings.MultipleOptions then
+        Dropdown.List.Visible = false
+        TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Size = UDim2.new(1, -10, 0, 45)}):Play()
+        TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Rotation = 180}):Play()
+    end
+    
+    if not DropdownSettings.Ext then
+        SaveConfiguration()
+    	end
+	end)
+end
         
         Dropdown.Interact.MouseButton1Click:Connect(function()
             if Dropdown.List.Visible then
