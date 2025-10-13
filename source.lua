@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---54444.0f
+--55555.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -4361,6 +4361,15 @@ end)
         
         Dropdown.List.Visible = false
 
+		Dropdown.ZIndex = 49
+Dropdown.List.ZIndex = 50
+for _, obj in ipairs(Dropdown.List:GetDescendants()) do
+    if obj:IsA("GuiObject") then
+        obj.ZIndex = 51
+    end
+end
+Dropdown.List.ClipsDescendants = false
+
         			if DropdownSettings.CurrentOption then
 				if type(DropdownSettings.CurrentOption) == "string" then
 					DropdownSettings.CurrentOption = {DropdownSettings.CurrentOption}
@@ -4434,7 +4443,6 @@ end)
         else
             DropdownOption.BackgroundColor3 = SelectedTheme.DropdownUnselected
         end
-	end
             
 DropdownOption.Interact.MouseButton1Click:Connect(function()
             if not DropdownSettings.MultipleOptions and table.find(DropdownSettings.CurrentOption, Option) then 
@@ -4491,6 +4499,7 @@ DropdownOption.Interact.MouseButton1Click:Connect(function()
                 SaveConfiguration()
             end
         end)
+    end
         
        Dropdown.Interact.MouseButton1Click:Connect(function()
         if Dropdown.List.Visible then
