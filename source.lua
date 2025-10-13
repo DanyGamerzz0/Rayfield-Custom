@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---50000.0f
+--yo
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -4347,32 +4347,33 @@ end)
         return CreateInContainer(function() return Slider end)
     end
     
-    function CollapsibleTab:CreateDropdown(DropdownSettings)
-        local Dropdown = Elements.Template.Dropdown:Clone()
-        Dropdown.Name = DropdownSettings.Name
-        Dropdown.Title.Text = DropdownSettings.Name
-        Dropdown.Visible = true
+function CollapsibleTab:CreateDropdown(DropdownSettings)
+    local Dropdown = Elements.Template.Dropdown:Clone()
+    Dropdown.Name = DropdownSettings.Name
+    Dropdown.Title.Text = DropdownSettings.Name
+    Dropdown.Visible = true
+    Dropdown.ClipsDescendants = false
+    
+    Dropdown.BackgroundTransparency = 0
+    Dropdown.UIStroke.Transparency = 0
+    Dropdown.Title.TextTransparency = 0
+    
+    Dropdown.List.Visible = false
 
-		Dropdown.ClipsDescendants = false
-        
-        Dropdown.BackgroundTransparency = 0
-        Dropdown.UIStroke.Transparency = 0
-        Dropdown.Title.TextTransparency = 0
-        
-        Dropdown.List.Visible = false
+    -- Initialize CurrentOption
+    if DropdownSettings.CurrentOption then
+        if type(DropdownSettings.CurrentOption) == "string" then
+            DropdownSettings.CurrentOption = {DropdownSettings.CurrentOption}
+        end
+        if not DropdownSettings.MultipleOptions and type(DropdownSettings.CurrentOption) == "table" then
+            DropdownSettings.CurrentOption = {DropdownSettings.CurrentOption[1]}
+        end
+    else
+        DropdownSettings.CurrentOption = {}
+    end
 
-        			if DropdownSettings.CurrentOption then
-				if type(DropdownSettings.CurrentOption) == "string" then
-					DropdownSettings.CurrentOption = {DropdownSettings.CurrentOption}
-				end
-				if not DropdownSettings.MultipleOptions and type(DropdownSettings.CurrentOption) == "table" then
-					DropdownSettings.CurrentOption = {DropdownSettings.CurrentOption[1]}
-				end
-			else
-				DropdownSettings.CurrentOption = {}
-			end
-
-			if DropdownSettings.MultipleOptions then
+    -- Set initial display text
+    if DropdownSettings.MultipleOptions then
         if #DropdownSettings.CurrentOption == 1 then
             Dropdown.Selected.Text = DropdownSettings.CurrentOption[1]
         elseif #DropdownSettings.CurrentOption == 0 then
@@ -4384,7 +4385,8 @@ end)
         Dropdown.Selected.Text = DropdownSettings.CurrentOption[1] or "None"
     end
 
-			if Settings.ConfigurationSaving then
+    -- Configuration saving setup
+    if Settings.ConfigurationSaving then
         if Settings.ConfigurationSaving.Enabled and DropdownSettings.Flag then
             RayfieldLibrary.Flags[DropdownSettings.Flag] = {
                 Type = "Dropdown",
@@ -4410,148 +4412,144 @@ end)
             }
         end
     end
-        Dropdown.Toggle.ImageColor3 = SelectedTheme.TextColor
-        Dropdown.Toggle.Rotation = 180
-        
+    
+    Dropdown.Toggle.ImageColor3 = SelectedTheme.TextColor
+    Dropdown.Toggle.Rotation = 180
+    
+    -- Clear existing options
     for _, ununusedoption in ipairs(Dropdown.List:GetChildren()) do
         if ununusedoption.ClassName == "Frame" and ununusedoption.Name ~= "Placeholder" then
             ununusedoption:Destroy()
         end
     end
+    
+    -- Create options with proper visibility
+    for _, Option in ipairs(DropdownSettings.Options) do
+        local DropdownOption = Elements.Template.Dropdown.List.Template:Clone()
+        DropdownOption.Name = Option
+        DropdownOption.Title.Text = Option
+        DropdownOption.Parent = Dropdown.List
+        DropdownOption.Visible = true
         
-        for _, Option in ipairs(DropdownSettings.Options) do
-            local DropdownOption = Elements.Template.Dropdown.List.Template:Clone()
-            DropdownOption.Name = Option
-            DropdownOption.Title.Text = Option
-            DropdownOption.Parent = Dropdown.List
-            DropdownOption.Visible = true
-			DropdownOption.BackgroundTransparency = 0
-			DropdownOption.UIStroke.Transparency = 0
-			DropdownOption.Title.TextTransparency = 0
-
-			if table.find(DropdownSettings.CurrentOption, Option) then
+        -- IMPORTANT: Set proper transparency values so text is visible
+        DropdownOption.BackgroundTransparency = 0
+        DropdownOption.UIStroke.Transparency = 0
+        DropdownOption.Title.TextTransparency = 0  -- This makes the text visible!
+        
+        -- Set colors
+        if table.find(DropdownSettings.CurrentOption, Option) then
             DropdownOption.BackgroundColor3 = SelectedTheme.DropdownSelected
         else
             DropdownOption.BackgroundColor3 = SelectedTheme.DropdownUnselected
         end
-		Dropdown.List.ZIndex = 10
-		for _, DropdownOpt in ipairs(Dropdown.List:GetChildren()) do
-    if DropdownOpt:IsA("Frame") and DropdownOpt.Name ~= "Placeholder" then
-        DropdownOpt.ZIndex = 11
-        if DropdownOpt:FindFirstChild("Interact") then
-            DropdownOpt.Interact.ZIndex = 12
+        
+        -- Set proper Z-index
+        Dropdown.List.ZIndex = 10
+        DropdownOption.ZIndex = 11
+        if DropdownOption:FindFirstChild("Interact") then
+            DropdownOption.Interact.ZIndex = 12
         end
     end
-end
-Dropdown.ZIndex = 8
-Dropdown.Interact.ZIndex = 9
-            
-DropdownOption.Interact.MouseButton1Click:Connect(function()
-	print("Clicked:", Option)
-	if not Dropdown.List.Visible then return end
-            if not DropdownSettings.MultipleOptions and table.find(DropdownSettings.CurrentOption, Option) then 
-                return
-            end
-
-            if table.find(DropdownSettings.CurrentOption, Option) then
-                table.remove(DropdownSettings.CurrentOption, table.find(DropdownSettings.CurrentOption, Option))
-            else
-                if not DropdownSettings.MultipleOptions then
-                    table.clear(DropdownSettings.CurrentOption)
+    
+    Dropdown.ZIndex = 8
+    Dropdown.Interact.ZIndex = 9
+    
+    -- Handle option clicks
+    for _, DropdownOption in ipairs(Dropdown.List:GetChildren()) do
+        if DropdownOption.ClassName == "Frame" and DropdownOption.Name ~= "Placeholder" then
+            DropdownOption.Interact.MouseButton1Click:Connect(function()
+                print("Clicked:", DropdownOption.Name)
+                if not Dropdown.List.Visible then return end
+                
+                local Option = DropdownOption.Name
+                
+                if not DropdownSettings.MultipleOptions and table.find(DropdownSettings.CurrentOption, Option) then 
+                    return
                 end
-                table.insert(DropdownSettings.CurrentOption, Option)
-            end
 
-            -- Update display text
-            if DropdownSettings.MultipleOptions then
-                if #DropdownSettings.CurrentOption == 1 then
-                    Dropdown.Selected.Text = DropdownSettings.CurrentOption[1]
-                elseif #DropdownSettings.CurrentOption == 0 then
-                    Dropdown.Selected.Text = "None"
+                if table.find(DropdownSettings.CurrentOption, Option) then
+                    table.remove(DropdownSettings.CurrentOption, table.find(DropdownSettings.CurrentOption, Option))
                 else
-                    Dropdown.Selected.Text = "Various"
+                    if not DropdownSettings.MultipleOptions then
+                        table.clear(DropdownSettings.CurrentOption)
+                    end
+                    table.insert(DropdownSettings.CurrentOption, Option)
                 end
-            else
-                Dropdown.Selected.Text = DropdownSettings.CurrentOption[1] or "None"
-            end
-            
-            -- Update option colors
-            for _, droption in ipairs(Dropdown.List:GetChildren()) do
-                if droption.ClassName == "Frame" and droption.Name ~= "Placeholder" then
-                    if table.find(DropdownSettings.CurrentOption, droption.Name) then
-                        droption.BackgroundColor3 = SelectedTheme.DropdownSelected
+
+                -- Update display text
+                if DropdownSettings.MultipleOptions then
+                    if #DropdownSettings.CurrentOption == 1 then
+                        Dropdown.Selected.Text = DropdownSettings.CurrentOption[1]
+                    elseif #DropdownSettings.CurrentOption == 0 then
+                        Dropdown.Selected.Text = "None"
                     else
-                        droption.BackgroundColor3 = SelectedTheme.DropdownUnselected
+                        Dropdown.Selected.Text = "Various"
+                    end
+                else
+                    Dropdown.Selected.Text = DropdownSettings.CurrentOption[1] or "None"
+                end
+                
+                -- Update option colors
+                for _, droption in ipairs(Dropdown.List:GetChildren()) do
+                    if droption.ClassName == "Frame" and droption.Name ~= "Placeholder" then
+                        if table.find(DropdownSettings.CurrentOption, droption.Name) then
+                            droption.BackgroundColor3 = SelectedTheme.DropdownSelected
+                        else
+                            droption.BackgroundColor3 = SelectedTheme.DropdownUnselected
+                        end
                     end
                 end
-            end
 
-            if DropdownSettings.Flag and RayfieldLibrary.Flags[DropdownSettings.Flag] then
-                RayfieldLibrary.Flags[DropdownSettings.Flag].CurrentOption = DropdownSettings.CurrentOption
-            end	
-            
-            pcall(DropdownSettings.Callback, DropdownSettings.CurrentOption)
-            
-            -- Close dropdown if not multi-select
-            if not DropdownSettings.MultipleOptions then
-                Dropdown.List.Visible = false
-                TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Size = UDim2.new(1, -10, 0, 45)}):Play()
-                TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Rotation = 180}):Play()
-            end
-            
-            if not DropdownSettings.Ext then
-                SaveConfiguration()
-            end
-        end)
+                if DropdownSettings.Flag and RayfieldLibrary.Flags[DropdownSettings.Flag] then
+                    RayfieldLibrary.Flags[DropdownSettings.Flag].CurrentOption = DropdownSettings.CurrentOption
+                end	
+                
+                pcall(DropdownSettings.Callback, DropdownSettings.CurrentOption)
+                
+                -- Close dropdown if not multi-select
+                if not DropdownSettings.MultipleOptions then
+                    Dropdown.List.Visible = false
+                    TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Size = UDim2.new(1, -10, 0, 45)}):Play()
+                    TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Rotation = 180}):Play()
+                end
+                
+                if not DropdownSettings.Ext then
+                    SaveConfiguration()
+                end
+            end)
+        end
     end
-        
-Dropdown.Interact.MouseButton1Click:Connect(function()
-    local HeaderButton = Collapsible:FindFirstChildOfClass("TextButton")
-
-    if Dropdown.List.Visible then
-        -- 🔒 closing dropdown
-        TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential),
-            {Size = UDim2.new(1, -10, 0, 45)}):Play()
-        TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential),
-            {Rotation = 180}):Play()
-        task.wait(0.3)
-        Dropdown.List.Visible = false
-        Dropdown.Interact.Active = true -- re-enable main button
-        if HeaderButton then HeaderButton.Active = true end
-
-    else
-        -- 🔓 opening dropdown
-        TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential),
-            {Size = UDim2.new(1, -10, 0, 180)}):Play()
-        Dropdown.List.Visible = true
-        TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential),
-            {Rotation = 0}):Play()
-        Dropdown.Interact.Active = false -- disable main button while open
-        if HeaderButton then HeaderButton.Active = false end
-    end
-end)
     
+    -- Handle dropdown toggle
+    Dropdown.Interact.MouseButton1Click:Connect(function()
+        local HeaderButton = Collapsible:FindFirstChildOfClass("TextButton")
+
+        if Dropdown.List.Visible then
+            -- Closing dropdown
+            TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Size = UDim2.new(1, -10, 0, 45)}):Play()
+            TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Rotation = 180}):Play()
+            task.wait(0.3)
+            Dropdown.List.Visible = false
+            Dropdown.Interact.Active = true
+            if HeaderButton then HeaderButton.Active = true end
+        else
+            -- Opening dropdown
+            TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Size = UDim2.new(1, -10, 0, 180)}):Play()
+            Dropdown.List.Visible = true
+            TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Rotation = 0}):Play()
+            Dropdown.Interact.Active = false
+            if HeaderButton then HeaderButton.Active = false end
+        end
+    end)
+
     Dropdown.MouseEnter:Connect(function()
         TweenService:Create(Dropdown, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackgroundHover}):Play()
     end)
-    
+
     Dropdown.MouseLeave:Connect(function()
         TweenService:Create(Dropdown, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
     end)
-    
-    if Settings.ConfigurationSaving then
-        if Settings.ConfigurationSaving.Enabled and DropdownSettings.Flag then
-            RayfieldLibrary.Flags[DropdownSettings.Flag] = {
-                Type = "Dropdown",
-                CurrentOption = DropdownSettings.CurrentOption,
-                Set = function(self, value)
-                    -- Set implementation
-                end,
-                Callback = DropdownSettings.Callback
-            }
-        end
-    end
-    
+
     return CreateInContainer(function() return Dropdown end)
 end
     
