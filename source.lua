@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---yoo000
+--yoo0000
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -4362,11 +4362,8 @@ function CollapsibleTab:CreateDropdown(DropdownSettings)
     Dropdown.Title.TextTransparency = 0
     Dropdown.Title.TextColor3 = SelectedTheme.TextColor
     
-    -- CRITICAL: Make the selected text visible
     Dropdown.Selected.TextTransparency = 0
     Dropdown.Selected.TextColor3 = SelectedTheme.TextColor
-    
-    print("Selected text set to:", Dropdown.Selected.Text)
     
     Dropdown.List.Visible = false
 
@@ -4447,15 +4444,11 @@ function CollapsibleTab:CreateDropdown(DropdownSettings)
         DropdownOption.Title.Text = Option
         DropdownOption.Visible = true
         
-        -- Make everything visible
         DropdownOption.BackgroundTransparency = 0
         DropdownOption.UIStroke.Transparency = 0
         DropdownOption.Title.TextTransparency = 0
         DropdownOption.Title.TextColor3 = SelectedTheme.TextColor
         
-        print("Option", i, "text:", DropdownOption.Title.Text, "transparency:", DropdownOption.Title.TextTransparency)
-        
-        -- Set colors
         if table.find(DropdownSettings.CurrentOption, Option) then
             DropdownOption.BackgroundColor3 = SelectedTheme.DropdownSelected
         else
@@ -4464,10 +4457,18 @@ function CollapsibleTab:CreateDropdown(DropdownSettings)
         
         DropdownOption.Parent = Dropdown.List
         
-        -- Click handler
+        -- IMPORTANT: Set ZIndex higher to ensure clicks work
         if DropdownOption:FindFirstChild("Interact") then
+            DropdownOption.Interact.ZIndex = 100
+            
             DropdownOption.Interact.MouseButton1Click:Connect(function()
                 print("Clicked option:", Option)
+                
+                -- Stop propagation to parent elements
+                local HeaderButton = Collapsible:FindFirstChildOfClass("TextButton")
+                if HeaderButton then
+                    HeaderButton.Active = false
+                end
                 
                 if not Dropdown.List.Visible then return end
                 
@@ -4510,15 +4511,22 @@ function CollapsibleTab:CreateDropdown(DropdownSettings)
 
                 if DropdownSettings.Flag and RayfieldLibrary.Flags[DropdownSettings.Flag] then
                     RayfieldLibrary.Flags[DropdownSettings.Flag].CurrentOption = DropdownSettings.CurrentOption
-                end	
+                end
                 
                 pcall(DropdownSettings.Callback, DropdownSettings.CurrentOption)
                 
                 -- Close dropdown if not multi-select
                 if not DropdownSettings.MultipleOptions then
+                    task.wait(0.1) -- Small delay before closing
                     Dropdown.List.Visible = false
                     TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Size = UDim2.new(1, -10, 0, 45)}):Play()
                     TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Rotation = 180}):Play()
+                end
+                
+                -- Re-enable header button after interaction
+                task.wait(0.2)
+                if HeaderButton then
+                    HeaderButton.Active = true
                 end
                 
                 if not DropdownSettings.Ext then
@@ -4540,14 +4548,14 @@ function CollapsibleTab:CreateDropdown(DropdownSettings)
             TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Rotation = 180}):Play()
             task.wait(0.3)
             Dropdown.List.Visible = false
-            Dropdown.Interact.Active = true
+            -- Re-enable header button when dropdown closes
             if HeaderButton then HeaderButton.Active = true end
         else
             print("Opening dropdown")
             TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Size = UDim2.new(1, -10, 0, 180)}):Play()
             Dropdown.List.Visible = true
             TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Rotation = 0}):Play()
-            Dropdown.Interact.Active = false
+            -- Disable header button when dropdown opens to prevent interference
             if HeaderButton then HeaderButton.Active = false end
         end
     end)
