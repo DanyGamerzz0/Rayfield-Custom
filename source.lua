@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---yoo0000
+--yoo00000
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -4355,6 +4355,8 @@ function CollapsibleTab:CreateDropdown(DropdownSettings)
     Dropdown.Title.Text = DropdownSettings.Name
     Dropdown.Visible = true
     Dropdown.ClipsDescendants = false
+
+	Dropdown.Size = UDim2.new(1, -10, 0, 45)
     
     -- Set main dropdown visibility
     Dropdown.BackgroundTransparency = 0
@@ -4366,6 +4368,8 @@ function CollapsibleTab:CreateDropdown(DropdownSettings)
     Dropdown.Selected.TextColor3 = SelectedTheme.TextColor
     
     Dropdown.List.Visible = false
+
+	Dropdown.Toggle.Rotation = 180
 
     -- Initialize CurrentOption
     if DropdownSettings.CurrentOption then
