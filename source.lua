@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---58.0f
+--5999.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -4159,6 +4159,33 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         end
         
         local CurrentValue = ToggleSettings.CurrentValue or false
+
+		if Settings.ConfigurationSaving then
+        if Settings.ConfigurationSaving.Enabled and ToggleSettings.Flag then
+            RayfieldLibrary.Flags[ToggleSettings.Flag] = {
+                Type = "Toggle",
+                CurrentValue = CurrentValue,
+                Set = function(self, value)
+                    CurrentValue = value
+                    -- Update toggle visual state
+                    if value then
+                        TweenService:Create(Toggle.Switch.Indicator, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Position = UDim2.new(1, -20, 0.5, 0)}):Play()
+                        TweenService:Create(Toggle.Switch.Indicator.UIStroke, TweenInfo.new(0.55, Enum.EasingStyle.Exponential), {Color = SelectedTheme.ToggleEnabledStroke}):Play()
+                        TweenService:Create(Toggle.Switch.Indicator, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ToggleEnabled}):Play()
+                        TweenService:Create(Toggle.Switch.UIStroke, TweenInfo.new(0.55, Enum.EasingStyle.Exponential), {Color = SelectedTheme.ToggleEnabledOuterStroke}):Play()
+                    else
+                        TweenService:Create(Toggle.Switch.Indicator, TweenInfo.new(0.45, Enum.EasingStyle.Quart), {Position = UDim2.new(1, -40, 0.5, 0)}):Play()
+                        TweenService:Create(Toggle.Switch.Indicator.UIStroke, TweenInfo.new(0.55, Enum.EasingStyle.Exponential), {Color = SelectedTheme.ToggleDisabledStroke}):Play()
+                        TweenService:Create(Toggle.Switch.Indicator, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ToggleDisabled}):Play()
+                        TweenService:Create(Toggle.Switch.UIStroke, TweenInfo.new(0.55, Enum.EasingStyle.Exponential), {Color = SelectedTheme.ToggleDisabledOuterStroke}):Play()
+                    end
+                    self.CurrentValue = value
+                    pcall(ToggleSettings.Callback, value)
+                end,
+                Callback = ToggleSettings.Callback
+            }
+        end
+    end
         
         if CurrentValue then
             Toggle.Switch.Indicator.Position = UDim2.new(1, -20, 0.5, 0)
@@ -4188,6 +4215,13 @@ function Tab:CreateCollapsible(CollapsibleSettings)
             end
             
             pcall(ToggleSettings.Callback, CurrentValue)
+
+			if ToggleSettings.Flag and RayfieldLibrary.Flags[ToggleSettings.Flag] then
+            RayfieldLibrary.Flags[ToggleSettings.Flag].CurrentValue = CurrentValue
+        end
+		if not ToggleSettings.Ext then
+            SaveConfiguration()
+        end
         end)
         
         Toggle.MouseEnter:Connect(function()
@@ -4221,6 +4255,27 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         end
         
         local CurrentValue = SliderSettings.CurrentValue or SliderSettings.Range[1]
+		if Settings.ConfigurationSaving then
+        if Settings.ConfigurationSaving.Enabled and SliderSettings.Flag then
+            RayfieldLibrary.Flags[SliderSettings.Flag] = {
+                Type = "Slider",
+                CurrentValue = CurrentValue,
+                Set = function(self, value)
+                    local NewVal = math.clamp(value, SliderSettings.Range[1], SliderSettings.Range[2])
+                    CurrentValue = NewVal
+                    self.CurrentValue = NewVal
+                    
+                    TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.45, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
+                        Size = UDim2.new(0, Slider.Main.AbsoluteSize.X * ((NewVal - SliderSettings.Range[1]) / (SliderSettings.Range[2] - SliderSettings.Range[1])), 1, 0)
+                    }):Play()
+                    
+                    Slider.Main.Information.Text = not SliderSettings.Suffix and tostring(NewVal) or tostring(NewVal) .. " " .. SliderSettings.Suffix
+                    pcall(SliderSettings.Callback, NewVal)
+                end,
+                Callback = SliderSettings.Callback
+            }
+        end
+    end
         local SLDragging = false
         
         Slider.Main.Information.Text = not SliderSettings.Suffix and tostring(CurrentValue) or tostring(CurrentValue) .. " " .. SliderSettings.Suffix
@@ -4275,6 +4330,16 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         Slider.MouseLeave:Connect(function()
             TweenService:Create(Slider, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
         end)
+		    if CurrentValue ~= NewValue then
+        CurrentValue = NewValue
+        if SliderSettings.Flag and RayfieldLibrary.Flags[SliderSettings.Flag] then
+            RayfieldLibrary.Flags[SliderSettings.Flag].CurrentValue = NewValue
+        end
+        pcall(SliderSettings.Callback, NewValue)
+        if not SliderSettings.Ext then
+            SaveConfiguration()
+        end
+    end
         
         return CreateInContainer(function() return Slider end)
     end
@@ -4300,6 +4365,32 @@ function Tab:CreateCollapsible(CollapsibleSettings)
 			else
 				DropdownSettings.CurrentOption = {}
 			end
+			if Settings.ConfigurationSaving then
+        if Settings.ConfigurationSaving.Enabled and DropdownSettings.Flag then
+            RayfieldLibrary.Flags[DropdownSettings.Flag] = {
+                Type = "Dropdown",
+                CurrentOption = DropdownSettings.CurrentOption,
+                Set = function(self, value)
+                    if typeof(value) == "string" then
+                        value = {value}
+                    end
+                    self.CurrentOption = value
+                    DropdownSettings.CurrentOption = value
+                    
+                    if #value == 1 then
+                        Dropdown.Selected.Text = value[1]
+                    elseif #value == 0 then
+                        Dropdown.Selected.Text = "None"
+                    else
+                        Dropdown.Selected.Text = "Various"
+                    end
+                    
+                    pcall(DropdownSettings.Callback, value)
+                end,
+                Callback = DropdownSettings.Callback
+            }
+        end
+    end
         Dropdown.Toggle.ImageColor3 = SelectedTheme.TextColor
         Dropdown.Toggle.Rotation = 180
         
@@ -4318,11 +4409,15 @@ function Tab:CreateCollapsible(CollapsibleSettings)
             
             DropdownOption.Interact.MouseButton1Click:Connect(function()
                 Dropdown.Selected.Text = Option
-                pcall(DropdownSettings.Callback, Option)
+				if DropdownSettings.Flag and RayfieldLibrary.Flags[DropdownSettings.Flag] then
+            RayfieldLibrary.Flags[DropdownSettings.Flag].CurrentOption = DropdownSettings.CurrentOption
+        end	
+                pcall(DropdownSettings.Callback, DropdownSettings.CurrentOption)
                 
                 Dropdown.List.Visible = false
                 TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Size = UDim2.new(1, -10, 0, 45)}):Play()
                 TweenService:Create(Dropdown.Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Rotation = 180}):Play()
+				
             end)
         end
         
@@ -4346,7 +4441,9 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         Dropdown.MouseLeave:Connect(function()
             TweenService:Create(Dropdown, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundColor3 = SelectedTheme.ElementBackground}):Play()
         end)
-        
+		if not DropdownSettings.Ext then
+            SaveConfiguration()
+        end
         return CreateInContainer(function() return Dropdown end)
     end
     
@@ -4364,12 +4461,35 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         Input.InputFrame.UIStroke.Color = SelectedTheme.InputStroke
         Input.InputFrame.InputBox.PlaceholderText = InputSettings.PlaceholderText or ""
         Input.InputFrame.InputBox.Text = InputSettings.CurrentValue or ""
+		InputSettings.CurrentValue = InputSettings.CurrentValue or ""
+		if Settings.ConfigurationSaving then
+        if Settings.ConfigurationSaving.Enabled and InputSettings.Flag then
+            RayfieldLibrary.Flags[InputSettings.Flag] = {
+                Type = "Input",
+                CurrentValue = InputSettings.CurrentValue,
+                Set = function(self, value)
+                    Input.InputFrame.InputBox.Text = value
+                    self.CurrentValue = value
+                    InputSettings.CurrentValue = value
+                    pcall(InputSettings.Callback, value)
+                end,
+                Callback = InputSettings.Callback
+            }
+        end
+    end
         
         Input.InputFrame.InputBox.FocusLost:Connect(function()
+			InputSettings.CurrentValue = Input.InputFrame.InputBox.Text
+			if InputSettings.Flag and RayfieldLibrary.Flags[InputSettings.Flag] then
+            RayfieldLibrary.Flags[InputSettings.Flag].CurrentValue = Input.InputFrame.InputBox.Text
+        end
             pcall(InputSettings.Callback, Input.InputFrame.InputBox.Text)
             if InputSettings.RemoveTextAfterFocusLost then
                 Input.InputFrame.InputBox.Text = ""
             end
+			if not InputSettings.Ext then
+            SaveConfiguration()
+        end
         end)
         
         Input.MouseEnter:Connect(function()
