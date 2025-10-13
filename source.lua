@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---61.0f
+--62.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -4116,6 +4116,8 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         element.Parent = Container
         childCount = childCount + 1
         element.LayoutOrder = childCount
+		task.wait(0.05)
+		element.Visible = true
 if element and element.Parent then
         pcall(function()
             element:GetPropertyChangedSignal("Size"):Connect(UpdateContainerSize)
@@ -4132,6 +4134,8 @@ if element and element.Parent then
         element.Parent = Container
         childCount = childCount + 1
         element.LayoutOrder = childCount
+				task.wait(0.05)
+		element.Visible = true
 if element and element.Parent then
         pcall(function()
             element:GetPropertyChangedSignal("Size"):Connect(UpdateContainerSize)
@@ -4148,6 +4152,8 @@ if element and element.Parent then
         element.Parent = Container
         childCount = childCount + 1
         element.LayoutOrder = childCount
+				task.wait(0.05)
+		element.Visible = true
 if element and element.Parent then
         pcall(function()
             element:GetPropertyChangedSignal("Size"):Connect(UpdateContainerSize)
@@ -4163,6 +4169,8 @@ if element and element.Parent then
         local element = Tab:CreateDropdown(DropdownSettings)
         element.Parent = Container
         childCount = childCount + 1
+				task.wait(0.05)
+		element.Visible = true
         element.LayoutOrder = childCount
 if element and element.Parent then
         pcall(function()
@@ -4180,6 +4188,8 @@ if element and element.Parent then
         element.Parent = Container
         childCount = childCount + 1
         element.LayoutOrder = childCount
+				task.wait(0.05)
+		element.Visible = true
 if element and element.Parent then
         pcall(function()
             element:GetPropertyChangedSignal("Size"):Connect(UpdateContainerSize)
@@ -4196,6 +4206,8 @@ if element and element.Parent then
         element.Parent = Container
         childCount = childCount + 1
         element.LayoutOrder = childCount
+				task.wait(0.05)
+		element.Visible = true
 if element and element.Parent then
         pcall(function()
             element:GetPropertyChangedSignal("Size"):Connect(UpdateContainerSize)
@@ -4237,6 +4249,8 @@ if element and element.Parent then
         
         childCount = childCount + 1
         Label.LayoutOrder = childCount
+				task.wait(0.05)
+		element.Visible = true
         UpdateContainerSize()
         
         local LabelValue = {}
@@ -4279,6 +4293,8 @@ if element and element.Parent then
         
         childCount = childCount + 1
         Paragraph.LayoutOrder = childCount
+				task.wait(0.05)
+		element.Visible = true
         UpdateContainerSize()
         
         local ParagraphValue = {}
