@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---yo
+--yoo
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -4357,6 +4357,8 @@ function CollapsibleTab:CreateDropdown(DropdownSettings)
     Dropdown.BackgroundTransparency = 0
     Dropdown.UIStroke.Transparency = 0
     Dropdown.Title.TextTransparency = 0
+	Dropdown.Selected.TextTransparency = 0
+	Dropdown.Selected.TextColor3 = SelectedTheme.TextColor
     
     Dropdown.List.Visible = false
 
@@ -4435,6 +4437,8 @@ function CollapsibleTab:CreateDropdown(DropdownSettings)
         DropdownOption.BackgroundTransparency = 0
         DropdownOption.UIStroke.Transparency = 0
         DropdownOption.Title.TextTransparency = 0  -- This makes the text visible!
+		Dropdown.Selected.TextTransparency = 0
+		Dropdown.Selected.TextColor3 = SelectedTheme.TextColor
         
         -- Set colors
         if table.find(DropdownSettings.CurrentOption, Option) then
