@@ -3944,7 +3944,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     Arrow.Position = UDim2.new(0, 12, 0, 14.5)  -- Fixed Y position (centered in 45px)
     Arrow.AnchorPoint = Vector2.new(0, 0)
     Arrow.BackgroundTransparency = 1
-	local iconic = getIcon("arrow-big-right")
+	local iconic = getIcon("chevron-right")
     Arrow.Image = 'rbxassetid://'..iconic.id
 	Arrow.ImageRectOffset = iconic.imageRectOffset
 	Arrow.ImageRectSize = iconic.imageRectSize
@@ -4275,7 +4275,16 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         Dropdown.Title.TextTransparency = 0
         
         Dropdown.List.Visible = false
-        Dropdown.Selected.Text = DropdownSettings.CurrentOption or "None"
+        			if DropdownSettings.CurrentOption then
+				if type(DropdownSettings.CurrentOption) == "string" then
+					DropdownSettings.CurrentOption = {DropdownSettings.CurrentOption}
+				end
+				if not DropdownSettings.MultipleOptions and type(DropdownSettings.CurrentOption) == "table" then
+					DropdownSettings.CurrentOption = {DropdownSettings.CurrentOption[1]}
+				end
+			else
+				DropdownSettings.CurrentOption = {}
+			end
         Dropdown.Toggle.ImageColor3 = SelectedTheme.TextColor
         Dropdown.Toggle.Rotation = 180
         
