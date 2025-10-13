@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---57777.0f
+--56666.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -3984,7 +3984,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     Container.ClipsDescendants = false
     Container.Parent = Collapsible
     Container.Visible = false
-    Container.ZIndex = Collapsible.ZIndex
+    Container.ZIndex = 5
     
     -- Add UIListLayout to container
     local ListLayout = Instance.new("UIListLayout")
@@ -4352,12 +4352,17 @@ end)
         Dropdown.Name = DropdownSettings.Name
         Dropdown.Title.Text = DropdownSettings.Name
         Dropdown.Visible = true
+
+		Dropdown.ClipsDescendants = false
+		Dropdown.ZIndex = 10
         
         Dropdown.BackgroundTransparency = 0
         Dropdown.UIStroke.Transparency = 0
         Dropdown.Title.TextTransparency = 0
         
         Dropdown.List.Visible = false
+		Dropdown.List.ZIndex = 11
+
         			if DropdownSettings.CurrentOption then
 				if type(DropdownSettings.CurrentOption) == "string" then
 					DropdownSettings.CurrentOption = {DropdownSettings.CurrentOption}
@@ -4412,8 +4417,9 @@ end)
 			DropdownOption.BackgroundTransparency = 0
 			DropdownOption.UIStroke.Transparency = 0
 			DropdownOption.Title.TextTransparency = 0
-			DropdownOption.ZIndex = Dropdown.List.ZIndex + 1
-			DropdownOption.Interact.ZIndex = DropdownOption.ZIndex + 1
+
+			DropdownOption.ZIndex = 12
+			DropdownOption.Interact.ZIndex = 13
             
 DropdownOption.Interact.MouseButton1Click:Connect(function()
     -- Add the option to CurrentOption table
