@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---54444.0f
+--53333.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -4436,6 +4436,7 @@ end)
         end
             
 DropdownOption.Interact.MouseButton1Click:Connect(function()
+	if not Dropdown.List.Visible then return end
             if not DropdownSettings.MultipleOptions and table.find(DropdownSettings.CurrentOption, Option) then 
                 return
             end
@@ -4503,8 +4504,8 @@ Dropdown.Interact.MouseButton1Click:Connect(function()
         task.wait(0.3)
         Dropdown.List.Visible = false
 
-        -- Re-enable collapsible input
-        if HeaderButton then HeaderButton.Active = true end
+        task.wait(1)
+		if HeaderButton then HeaderButton.Active = true end
     else
         -- Opening dropdown
         TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Size = UDim2.new(1, -10, 0, 180)}):Play()
