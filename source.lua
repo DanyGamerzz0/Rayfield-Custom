@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---yoo
+--yoo0
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -4427,33 +4427,28 @@ function CollapsibleTab:CreateDropdown(DropdownSettings)
     
     -- Create options with proper visibility
     for _, Option in ipairs(DropdownSettings.Options) do
-        local DropdownOption = Elements.Template.Dropdown.List.Template:Clone()
-        DropdownOption.Name = Option
-        DropdownOption.Title.Text = Option
-        DropdownOption.Parent = Dropdown.List
-        DropdownOption.Visible = true
-        
-        -- IMPORTANT: Set proper transparency values so text is visible
-        DropdownOption.BackgroundTransparency = 0
-        DropdownOption.UIStroke.Transparency = 0
-        DropdownOption.Title.TextTransparency = 0  -- This makes the text visible!
-		Dropdown.Selected.TextTransparency = 0
-		Dropdown.Selected.TextColor3 = SelectedTheme.TextColor
-        
-        -- Set colors
-        if table.find(DropdownSettings.CurrentOption, Option) then
-            DropdownOption.BackgroundColor3 = SelectedTheme.DropdownSelected
-        else
-            DropdownOption.BackgroundColor3 = SelectedTheme.DropdownUnselected
-        end
-        
-        -- Set proper Z-index
-        Dropdown.List.ZIndex = 10
-        DropdownOption.ZIndex = 11
-        if DropdownOption:FindFirstChild("Interact") then
-            DropdownOption.Interact.ZIndex = 12
-        end
+    local DropdownOption = Elements.Template.Dropdown.List.Template:Clone()
+    DropdownOption.Name = Option
+    DropdownOption.Title.Text = Option
+    DropdownOption.Parent = Dropdown.List
+    DropdownOption.Visible = true
+    
+    -- Set proper transparency and colors
+    DropdownOption.BackgroundTransparency = 0
+    DropdownOption.UIStroke.Transparency = 0
+    DropdownOption.Title.TextTransparency = 0
+    DropdownOption.Title.TextColor3 = SelectedTheme.TextColor -- ADD THIS LINE
+    
+    -- Set colors based on selection
+    if table.find(DropdownSettings.CurrentOption, Option) then
+        DropdownOption.BackgroundColor3 = SelectedTheme.DropdownSelected
+    else
+        DropdownOption.BackgroundColor3 = SelectedTheme.DropdownUnselected
     end
+    
+    -- IMPORTANT: Add interact handler HERE
+    DropdownOption.Interact.ZIndex = 12
+end
     
     Dropdown.ZIndex = 8
     Dropdown.Interact.ZIndex = 9
