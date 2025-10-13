@@ -3915,7 +3915,7 @@ end
 
 	return SliderSettings
 end
---57.0f
+--58.0f
 function Tab:CreateCollapsible(CollapsibleSettings)
     local CollapsibleValue = {}
     local IsExpanded = CollapsibleSettings.DefaultExpanded or false
@@ -3941,19 +3941,26 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     local Arrow = Instance.new("ImageLabel")
     Arrow.Name = "Arrow"
     Arrow.Size = UDim2.new(0, 16, 0, 16)
-    Arrow.Position = UDim2.new(0, 12, 0, 14.5)  -- Fixed Y position (centered in 45px)
+    Arrow.Position = UDim2.new(0, 12, 0, 14.5)
     Arrow.AnchorPoint = Vector2.new(0, 0)
     Arrow.BackgroundTransparency = 1
-	local iconic = getIcon("chevron-right")
-    Arrow.Image = 'rbxassetid://'..iconic.id
-	Arrow.ImageRectOffset = iconic.imageRectOffset
-	Arrow.ImageRectSize = iconic.imageRectSize
+    
+    -- Use Lucide icon
+    if Icons then
+        local arrowIcon = getIcon("chevron-right")
+        Arrow.Image = 'rbxassetid://'..arrowIcon.id
+        Arrow.ImageRectOffset = arrowIcon.imageRectOffset
+        Arrow.ImageRectSize = arrowIcon.imageRectSize
+    else
+        Arrow.Image = "rbxassetid://0"
+    end
+    
     Arrow.ImageColor3 = SelectedTheme.TextColor
     Arrow.Rotation = IsExpanded and 90 or 0
     Arrow.Parent = Collapsible
     
-    -- Fix title positioning - use fixed Y position
-    Collapsible.Title.Position = UDim2.new(0, 35, 0, 25.5)  -- Fixed Y to center in 45px
+    -- Fix title positioning
+    Collapsible.Title.Position = UDim2.new(0, 35, 0, 25.5)
     Collapsible.Title.Size = UDim2.new(1, -45, 0, 18)
     Collapsible.Title.TextXAlignment = Enum.TextXAlignment.Left
     Collapsible.Title.TextYAlignment = Enum.TextYAlignment.Top
@@ -4048,6 +4055,14 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         end
         
         UpdateContainerSize()
+        
+        -- Save configuration when state changes
+        if CollapsibleSettings.Flag then
+            CollapsibleValue.CurrentValue = IsExpanded
+            if not CollapsibleSettings.Ext then
+                SaveConfiguration()
+            end
+        end
     end
     
     HeaderButton.MouseButton1Click:Connect(function()
@@ -4084,7 +4099,7 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         end
     end)
     
-    -- Container element creators
+    -- Container element creators (keeping all your existing functions)
     local CollapsibleTab = {}
     
     local function CreateInContainer(createFunc, ...)
@@ -4465,6 +4480,11 @@ function Tab:CreateCollapsible(CollapsibleSettings)
         return CreateInContainer(function() return Paragraph end)
     end
     
+    function CollapsibleValue:Set(expanded)
+        IsExpanded = expanded
+        UpdateCollapsible(true)
+    end
+    
     function CollapsibleValue:SetExpanded(expanded)
         IsExpanded = expanded
         UpdateCollapsible(true)
@@ -4473,6 +4493,17 @@ function Tab:CreateCollapsible(CollapsibleSettings)
     function CollapsibleValue:Toggle()
         IsExpanded = not IsExpanded
         UpdateCollapsible(true)
+    end
+    
+    -- Store current value for config saving
+    CollapsibleValue.CurrentValue = IsExpanded
+    CollapsibleValue.Type = "Collapsible"
+    
+    -- Register with configuration system
+    if Settings.ConfigurationSaving then
+        if Settings.ConfigurationSaving.Enabled and CollapsibleSettings.Flag then
+            RayfieldLibrary.Flags[CollapsibleSettings.Flag] = CollapsibleValue
+        end
     end
     
     UpdateCollapsible(false)
