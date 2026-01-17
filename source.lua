@@ -4441,7 +4441,7 @@ function CollapsibleTab:CreateDropdown(DropdownSettings)
     
     -- Create options
     for i, Option in ipairs(DropdownSettings.Options) do
-        print("Creating option:", Option)
+        --print("Creating option:", Option)
         
         local DropdownOption = Elements.Template.Dropdown.List.Template:Clone()
         DropdownOption.Name = Option
