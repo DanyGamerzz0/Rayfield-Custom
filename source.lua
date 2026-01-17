@@ -4348,7 +4348,7 @@ end)
     end
     
 function CollapsibleTab:CreateDropdown(DropdownSettings)
-    print("Creating dropdown:", DropdownSettings.Name)
+    --print("Creating dropdown:", DropdownSettings.Name)
     
     local Dropdown = Elements.Template.Dropdown:Clone()
     Dropdown.Name = DropdownSettings.Name
@@ -4436,8 +4436,8 @@ function CollapsibleTab:CreateDropdown(DropdownSettings)
         end
     end
     
-    print("Creating options for:", DropdownSettings.Name)
-    print("Number of options:", #DropdownSettings.Options)
+    --print("Creating options for:", DropdownSettings.Name)
+    --print("Number of options:", #DropdownSettings.Options)
     
     -- Create options
     for i, Option in ipairs(DropdownSettings.Options) do
@@ -4540,7 +4540,7 @@ function CollapsibleTab:CreateDropdown(DropdownSettings)
         end
     end
     
-    print("Options created. List children count:", #Dropdown.List:GetChildren())
+    --print("Options created. List children count:", #Dropdown.List:GetChildren())
     
     -- Handle dropdown toggle
     Dropdown.Interact.MouseButton1Click:Connect(function()
