@@ -4842,7 +4842,7 @@ end
 
 	if not success then warn('Rayfield had an issue creating settings.') end
 
-	task.spawn(function()
+task.spawn(function()
 	local screenGui = Instance.new("ScreenGui")
 	screenGui.Name = "RayfieldToggle"
 	screenGui.ResetOnSpawn = false
@@ -4958,7 +4958,15 @@ end
 			
 			-- Only toggle if it was a quick click with minimal movement
 			if timeDelta < 0.2 and moveDistance < 5 then
-				setVisibility(Hidden, false)
+				-- Use RayfieldLibrary's visibility functions
+				if Debounce then return end
+				if Hidden then
+					Hidden = false
+					Unhide()
+				else
+					Hidden = true
+					Hide(false)
+				end
 			end
 		end
 		clickStartPos = nil
