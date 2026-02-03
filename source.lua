@@ -4842,6 +4842,149 @@ end
 
 	if not success then warn('Rayfield had an issue creating settings.') end
 
+	task.spawn(function()
+	local screenGui = Instance.new("ScreenGui")
+	screenGui.Name = "RayfieldToggle"
+	screenGui.ResetOnSpawn = false
+	screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	
+	if gethui then
+		screenGui.Parent = gethui()
+	elseif syn and syn.protect_gui then 
+		syn.protect_gui(screenGui)
+		screenGui.Parent = CoreGui
+	elseif CoreGui:FindFirstChild("RobloxGui") then
+		screenGui.Parent = CoreGui:FindFirstChild("RobloxGui")
+	else
+		screenGui.Parent = CoreGui
+	end
+
+	-- Create the circular image button
+	local toggleButton = Instance.new("ImageButton")
+	toggleButton.Name = "ToggleButton"
+	toggleButton.Parent = screenGui
+	toggleButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+	toggleButton.BorderSizePixel = 0
+	toggleButton.Position = UDim2.new(0, 50, 0, 50)
+	toggleButton.Size = UDim2.new(0, 50, 0, 50)
+	toggleButton.Image = "rbxassetid://139436994731049"
+	toggleButton.ScaleType = Enum.ScaleType.Fit
+	toggleButton.ImageTransparency = 0
+	toggleButton.BackgroundTransparency = 0
+	toggleButton.ZIndex = 10000
+
+	-- Make it circular
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(1, 0)
+	corner.Parent = toggleButton
+
+	-- Add shadow effect
+	local shadow = Instance.new("ImageLabel")
+	shadow.Name = "Shadow"
+	shadow.Parent = toggleButton
+	shadow.BackgroundTransparency = 1
+	shadow.Position = UDim2.new(0, -15, 0, -15)
+	shadow.Size = UDim2.new(1, 30, 1, 30)
+	shadow.ZIndex = toggleButton.ZIndex - 1
+	shadow.Image = "rbxassetid://6014261993"
+	shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+	shadow.ImageTransparency = 0.5
+	shadow.ScaleType = Enum.ScaleType.Slice
+	shadow.SliceCenter = Rect.new(49, 49, 450, 450)
+
+	-- Dragging variables
+	local dragging = false
+	local dragInput
+	local dragStart
+	local startPos
+
+	-- Update function for dragging
+	local function update(input)
+		if dragging then
+			local delta = input.Position - dragStart
+			toggleButton.Position = UDim2.new(
+				startPos.X.Scale,
+				startPos.X.Offset + delta.X,
+				startPos.Y.Scale,
+				startPos.Y.Offset + delta.Y
+			)
+		end
+	end
+
+	-- Input handling
+	toggleButton.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = toggleButton.Position
+			
+			local connection
+			connection = input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+					connection:Disconnect()
+				end
+			end)
+		end
+	end)
+
+	toggleButton.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			update(input)
+		end
+	end)
+
+	-- Click to toggle (with drag detection)
+	local clickStartPos = nil
+	local clickStartTime = 0
+	
+	toggleButton.MouseButton1Down:Connect(function()
+		clickStartPos = toggleButton.Position
+		clickStartTime = tick()
+	end)
+
+	toggleButton.MouseButton1Up:Connect(function()
+		if clickStartPos then
+			local timeDelta = tick() - clickStartTime
+			local positionDelta = (toggleButton.Position.X.Offset - clickStartPos.X.Offset)^2 + 
+			                       (toggleButton.Position.Y.Offset - clickStartPos.Y.Offset)^2
+			local moveDistance = math.sqrt(positionDelta)
+			
+			-- Only toggle if it was a quick click with minimal movement
+			if timeDelta < 0.2 and moveDistance < 5 then
+				setVisibility(Hidden, false)
+			end
+		end
+		clickStartPos = nil
+	end)
+
+	-- Hover effects
+	toggleButton.MouseEnter:Connect(function()
+		TweenService:Create(toggleButton, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+			Size = UDim2.new(0, 55, 0, 55),
+			BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+		}):Play()
+	end)
+
+	toggleButton.MouseLeave:Connect(function()
+		TweenService:Create(toggleButton, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+			Size = UDim2.new(0, 50, 0, 50),
+			BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+		}):Play()
+	end)
+	
+	-- Clean up when Rayfield is destroyed
+	Rayfield.Destroying:Connect(function()
+		screenGui:Destroy()
+	end)
+end)
+
 	return Window
 end
 
